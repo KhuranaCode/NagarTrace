@@ -1,28 +1,90 @@
 # NagarTrace
 
-Independently runnable React + TypeScript road-hazard accountability prototype.
+### Your roads. Our shared responsibility.
 
-## Run
-Requires Node.js 22.12+.
+An interactive road-hazard accountability prototype: describe a hazard, check the road record, review responsibility and confirm a demo complaint.
+
+[Open the live demo](https://khuranacode.github.io/NagarTrace/) · [Source](https://github.com/KhuranaCode/NagarTrace)
+
+> This public website uses fictional roads, companies, warranties and identities. It sends no real complaint. It is not an emergency service. AI detection and authority delivery are not implemented.
+
+![NagarTrace landing page](1-nt-pages-desktop.png)
+
+## Try it
+
+1. Select **Report a hazard**.
+2. Choose a sample road and hazard. Add an optional note.
+3. Save a temporary demo intake.
+4. Use **Simulate record review** to inspect a fictional responsibility record.
+5. Review the proposed route and explicitly finalise the demo complaint.
+6. Explore the issue desk and synthetic road registry.
+
+Photo and device-location previews stay on your device. They are not uploaded as evidence. The report screen resets on refresh; browser-local demo issues are not a shared database.
+
+## The idea
+
+A road complaint needs more than a submission receipt. NagarTrace explores a chain from hazard to responsible owner, a visible deadline and a repair that can be checked. Verified utility work takes priority; warranty and municipal routing depend on verified records. Unknown records should go to officer review, not a guessed contractor.
+
+![Hazard gallery](2-nt-pages-gallery.png)
+
+| Intake | Explicit final check |
+| --- | --- |
+| ![Mobile intake](3-nt-pages-report-mobile.png) | ![Mobile demo finalisation](4-nt-pages-final-mobile.png) |
+
+## What works today
+
+- Responsive landing, high-contrast report buttons, hazard guidance and mobile navigation.
+- Captioned 41-second How to report video embedded on the website.
+- Three-step simulated reporting flow with edit and final confirmation.
+- Issue desk, filters, search and 20 synthetic road records.
+- Demo routing, deadlines, repair-proof and confirmation state-machine rules.
+- 19 automated engine tests.
+- GitHub Pages deployment, with hash routes for refresh-safe static hosting.
+
+## Architecture: current public demo
+
+```mermaid
+flowchart LR
+  Citizen[Browser] --> UI[React + TypeScript]
+  UI --> Rules[Demo routing and state rules]
+  UI --> Local[Browser-local demo state]
+  Pages[GitHub Pages static hosting] --> UI
+  Rules --> Registry[Fictional road registry]
+```
+
+There is no deployed backend behind this website. Separate backend groundwork has been tested locally with PostgreSQL/PostGIS and signed test JWTs. It is not integrated into this public demo.
+
+## Run locally
+
+Node.js 22.12+ is required.
 
 ```sh
 npm ci
 npm run dev
-npm run build
 npm test
+npm run build
 ```
 
-The expanded application source is under `src/src/`. `index.html` points to its entrypoint. Photos are bundled as typed data-URL modules so the app needs no external image host. The root source-part files and restore.mjs are a recoverable backup of the earlier prototype, not needed to run this current checkout.
+The active source is under `src/src/`; `index.html` points to its entry. `npm run build` uses the `/NagarTrace/` Pages base. Routes use `#/report`, `#/desk`, `#/registry` and `#/about`. The Pages workflow builds and publishes `dist/`.
 
-GitHub Pages builds with `/NagarTrace/` as its base. Hash routes such as `#/report` support direct links and refreshes on static hosting. The Pages workflow tests, builds and deploys `dist/`.
+Root `source-part-*.txt` and `restore.mjs` preserve an earlier source backup. They are not needed for the current checkout.
 
-## Working
-Responsive landing, coloured full hazard gallery, supplied photos, mobile dialog menu, perspective scroll stack, role slider, issue desk/filter/search, 20 synthetic registry records, intake -> simulated officer review -> preview -> explicit finalisation. Routing/deadline/state-machine rules have 19 tests.
+## Production gates still open
 
-## Limits
-Development demo only. Roads, companies, warranties and citizen roles are fictional. No real complaint sent. No backend, authority integration, authentication, real repair evidence, exact-pin duplicate detection, live maps, immutable audit or notifications. Browser-local state is not shared. Intake and photo/GPS previews are temporary. Same-road/hazard merging demonstrates a rule, not production incident matching.
+| Area | Current status |
+| --- | --- |
+| Accounts and saved reports | Local backend foundation tested; hosted service and UI integration pending |
+| Exact map pins | Not connected in public demo |
+| Secure photo uploads | Local previews only; validation, privacy review and private storage pending |
+| Road/contractor/warranty data | Fictional records; verified datasets and authority process required |
+| Repair tracking and escalation | Demo rules only; real workflow and delivery pending |
+| AI hazard detection | Not implemented or evaluated |
+| Privacy and security | Partial local tests; deployment review, broader security and real-user testing required |
 
-## Images and design
-Supplied photos are illustrative reference images, not verified cases, endorsements or repair evidence. Location/date remain unverified. The owner approved public publication of the demo source and website images. Source includes compressed copies; originals remain unchanged privately.
+A clean dependency scan is not a security certification. Never place real sensitive reports, credentials or personal data into this demo.
 
-Design direction: https://nova-dental-dev.webflow.io/ . No reference-site code, fonts or assets copied. PRD attribution: Manan Bharti.
+## Images and credits
+
+Supplied photos illustrate the prototype; they are not verified cases or repair evidence. Location and date are unverified. Compressed copies are included with the owner's approval; originals remain unchanged privately.
+
+Design direction: [Nova Dental](https://nova-dental-dev.webflow.io/). No reference-site code, fonts or assets copied. PRD attribution: Manan Bharti.
