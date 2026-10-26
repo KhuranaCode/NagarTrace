@@ -1,1 +1,23 @@
-{"name":"nagartrace","version":"0.1.0","private":true,"type":"module","scripts":{"dev":"vite --host 0.0.0.0","build":"vite build","preview":"vite preview --host 0.0.0.0","test":"node --experimental-strip-types test-engine.mjs"},"dependencies":{"react":"19.1.1","react-dom":"19.1.1","react-router-dom":"7.9.4"},"devDependencies":{"vite":"7.1.12","typescript":"5.9.3","@types/react":"19.1.16","@types/react-dom":"19.1.9"}}
+{
+  "name": "nagartrace",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build --base=/NagarTrace/",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "node --experimental-strip-types test-engine.mjs"
+  },
+  "dependencies": {
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "react-router-dom": "7.9.4"
+  },
+  "devDependencies": {
+    "vite": "7.1.12",
+    "typescript": "5.9.3",
+    "@types/react": "19.1.16",
+    "@types/react-dom": "19.1.9"
+  }
+}
