@@ -1,0 +1,4 @@
+// Public configuration only. No secrets may ever be added here.
+export const API_BASE = 'https://nagartrace-api.onrender.com'
+export const SUPABASE_URL = 'https://hxolnshsffehxdairque.supabase.co'
+export const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_R_lRZf8CX4yGWlclflIm7w_QEAjfR9B'

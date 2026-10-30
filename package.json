@@ -1,23 +1,32 @@
 {
-  "name": "nagartrace",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
+  "name": "nagartrace-web",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "dev": "vite --host 0.0.0.0",
-    "build": "vite build --base=/NagarTrace/",
-    "preview": "vite preview --host 0.0.0.0",
-    "test": "node --experimental-strip-types test-engine.mjs"
+    "dev": "vite",
+    "build": "vite build && cp dist/index.html dist/404.html",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "tsc --noEmit"
   },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
   "dependencies": {
-    "react": "19.1.1",
-    "react-dom": "19.1.1",
-    "react-router-dom": "7.18.4"
+    "@supabase/supabase-js": "^2.118.0",
+    "leaflet": "^1.9.4",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router-dom": "^7.18.5"
   },
   "devDependencies": {
-    "@types/react": "19.1.16",
-    "@types/react-dom": "19.1.9",
-    "typescript": "5.9.3",
-    "vite": "7.3.7"
+    "@types/leaflet": "^1.9.22",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.7"
   }
 }
