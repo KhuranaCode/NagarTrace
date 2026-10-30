@@ -61,8 +61,8 @@ export default function Reminders({ d, email, onUnavailable }: { d: IssueDetail;
     try {
       const r = await api.followupCampaigns(d.id)
       setSupported(true)
-      setCampaigns(r.campaigns)
-      setDeliveries(r.deliveries)
+      setCampaigns(r.campaigns ?? [])
+      setDeliveries(r.deliveries ?? [])
     } catch (e: any) {
       if (e?.status === 404) { setSupported(false); onUnavailable() }
       else setSupported(true) // other errors: panel exists, show setup anyway
