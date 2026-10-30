@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api, ApiError } from '../api'
 import { assessEvidence, formatVerdict, parsePhotoMetadata, type MetadataAssessment } from '../evidence/photo-metadata'
+import { assessCorroboration, averageHash, formatCorroborationVerdict, type CorroborationAssessment } from '../evidence/corroboration'
+import type { EvidenceMeta } from '../types'
 import { useAuth } from '../auth'
 import type { IssueDetail as Detail, Me } from '../types'
 import { Deadline, ErrorBox, fmtDate, HazardTag, MapView, Spinner, STATUS_META, StatusPill, SyntheticBadge } from '../ui'
@@ -76,6 +78,44 @@ function EvidenceImage({ issueId, evidenceId, cap }: { issueId: string; evidence
         ) : null}
       </details>
     </div>
+  )
+}
+
+/** Cross-photo consistency checks over the whole evidence set (on-device, honest wording). */
+function CorroborationPanel({ issueId, evidence }: { issueId: string; evidence: EvidenceMeta[] }) {
+  const [result, setResult] = useState<CorroborationAssessment | null>(null)
+  const [busy, setBusy] = useState(false)
+  useEffect(() => {
+    if (evidence.length === 0) { setResult(assessCorroboration([], new Map())); return }
+    let live = true
+    setBusy(true)
+    void (async () => {
+      const hashes = new Map<string, bigint | null>()
+      await Promise.all(evidence.map(async (e) => {
+        try {
+          const objUrl = await api.evidenceBlobUrl(issueId, e.id)
+          try {
+            const blob = await (await fetch(objUrl)).blob()
+            hashes.set(e.id, await averageHash(blob))
+          } finally { URL.revokeObjectURL(objUrl) }
+        } catch { hashes.set(e.id, null) }
+      }))
+      if (live) { setResult(assessCorroboration(evidence, hashes)); setBusy(false) }
+    })()
+    return () => { live = false }
+  }, [issueId, evidence])
+  if (!result) return null
+  return (
+    <details className="photo-details" style={{ marginTop: 10 }}>
+      <summary>Cross-checks across these photos - {formatCorroborationVerdict(result.verdict)}</summary>
+      {busy ? <p className="small-note">Comparing photos on your device…</p> : null}
+      <ul>
+        {result.signals.map((sig) => (
+          <li key={sig.id} className={`sig-${sig.state}`}><strong>{sig.label}:</strong> {sig.detail}</li>
+        ))}
+      </ul>
+      <p className="small-note">Cross-checks catch reused photos, impossible timelines and location mismatches. A pass is weak corroboration only - it never proves a photo is genuine.</p>
+    </details>
   )
 }
 
@@ -250,6 +290,7 @@ export default function IssueDetail() {
               ))}
             </div>
           )}
+          <CorroborationPanel issueId={d.id} evidence={d.evidence} />
           <p className="small-note">Photos have no face or plate blur - they stay private to participants and are never shown publicly.</p>
         </div>
       </div>
