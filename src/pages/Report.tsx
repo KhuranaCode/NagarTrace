@@ -31,6 +31,11 @@ export default function Report() {
   const [moved, setMoved] = useState(false)
   const [, setTick] = useState(0) // countdown re-render
   const watchId = useRef<number | null>(null)
+  const fixPerfAt = useRef<number | null>(null)
+  const pausedMs = useRef(0) // camera-app time excluded from the window for THIS fix
+  const pausedAtPick = useRef(0)
+  const hiddenAt = useRef<number | null>(null)
+  const [mtimeHint, setMtimeHint] = useState<'old' | 'unknown' | null>(null)
   const idemKey = useRef<string>(crypto.randomUUID())
   const pointsBaseline = useRef<number | null>(null)
   const [pointsAwarded, setPointsAwarded] = useState<number | null>(null)
@@ -68,11 +73,6 @@ export default function Report() {
     return 2 * R * Math.asin(Math.sqrt(h))
   }
   // Monotonic window clock: performance.now() never jumps with wall-clock changes.
-  const fixPerfAt = useRef<number | null>(null)
-  const pausedMs = useRef(0) // camera-app time excluded from the window for THIS fix
-  const pausedAtPick = useRef(0)
-  const hiddenAt = useRef<number | null>(null)
-  const [mtimeHint, setMtimeHint] = useState<'old' | 'unknown' | null>(null)
   const elapsedMs = () => (fixPerfAt.current === null ? Number.POSITIVE_INFINITY : performance.now() - fixPerfAt.current - pausedMs.current)
   const windowLive = !!gps && !moved && elapsedMs() <= BIND_WINDOW_MS
   const bound = !!photo && photoPickedAt !== null && fixPerfAt.current !== null && !moved
