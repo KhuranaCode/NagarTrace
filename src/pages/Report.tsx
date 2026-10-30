@@ -4,6 +4,7 @@ import { api, ApiError } from '../api'
 import { useAuth } from '../auth'
 import type { Hazard, ReportResult } from '../types'
 import { ErrorBox, HAZARD_META, HazardIcon } from '../ui'
+import { assessEvidence, formatVerdict, parsePhotoMetadata, stripJpegMetadata, type MetadataAssessment } from '../evidence/photo-metadata'
 
 type Gps = { lat: number; lon: number; accuracy_m: number; captured_at: string }
 
@@ -23,6 +24,8 @@ export default function Report() {
   const [err, setErr] = useState<unknown>(null)
   const [result, setResult] = useState<ReportResult | null>(null)
   const [photoState, setPhotoState] = useState<'idle' | 'uploading' | 'done' | 'failed'>('idle')
+  const [photoAssess, setPhotoAssess] = useState<MetadataAssessment | null>(null)
+  const [stripMeta, setStripMeta] = useState(false)
   const [photoMsg, setPhotoMsg] = useState<string | null>(null)
   const idemKey = useRef<string>(crypto.randomUUID())
 
@@ -62,8 +65,15 @@ export default function Report() {
 
   const pickPhoto = (f: File | null) => {
     setPhoto(f)
+    setPhotoAssess(null)
     if (photoUrl) URL.revokeObjectURL(photoUrl)
     setPhotoUrl(f ? URL.createObjectURL(f) : null)
+    if (f) {
+      // On-device metadata read - the photo never leaves the phone for this.
+      parsePhotoMetadata(f)
+        .then((meta) => setPhotoAssess(assessEvidence(meta, { reportLat: gps?.lat, reportLon: gps?.lon, reportedAt: new Date() })))
+        .catch(() => setPhotoAssess(null))
+    }
   }
 
   const staleCapture = gps ? Date.now() - new Date(gps.captured_at).getTime() > 13 * 60 * 1000 : false
@@ -90,7 +100,12 @@ export default function Report() {
       if (photo) {
         setPhotoState('uploading')
         try {
-          const up = await api.uploadEvidence(r.issue.id, 'report', gps.lat, gps.lon, photo, photo.type || 'image/jpeg')
+          let blob: Blob = photo
+        if (stripMeta) {
+          const stripped = await stripJpegMetadata(photo)
+          if (stripped) blob = stripped
+        }
+        const up = await api.uploadEvidence(r.issue.id, 'report', gps.lat, gps.lon, blob, blob.type || 'image/jpeg')
           setPhotoState('done')
           setPhotoMsg(up.location_ok ? 'Photo added to the issue.' : 'Photo added, but it looks far from the report location and may not count as evidence.')
         } catch (e) {
@@ -149,6 +164,23 @@ export default function Report() {
             />
             <div className="hint">Taken on the spot helps officers verify. Never shown publicly. You can also add it after submitting.</div>
             {photoUrl ? <img src={photoUrl} className="photo-preview" alt="Selected hazard" /> : null}
+            {photoAssess ? (
+              <details className="photo-details">
+                <summary>Photo details - {formatVerdict(photoAssess.verdict)}</summary>
+                <ul>
+                  {photoAssess.signals.map((sig) => (
+                    <li key={sig.id} className={`sig-${sig.state}`}><strong>{sig.label}:</strong> {sig.detail}</li>
+                  ))}
+                </ul>
+                <p className="small-note">Read on your device only - the photo is not sent anywhere for this check. Metadata can be missing after forwarding (unknown, not suspicious) and can be forged when present.</p>
+              </details>
+            ) : null}
+            {photo ? (
+              <label className="checkrow" style={{ marginTop: 8 }}>
+                <input type="checkbox" checked={stripMeta} onChange={(e) => setStripMeta(e.target.checked)} />
+                Remove hidden metadata (camera details, any embedded location) before upload
+              </label>
+            ) : null}
           </div>
           <div className="field">
             <label>Location</label>
