@@ -27,12 +27,18 @@ export default function Home() {
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    if (!('IntersectionObserver' in window)) {
+      document.querySelectorAll('.reveal, .reveal-stagger').forEach((el) => el.classList.add('in'))
+      return
+    }
     const io = new IntersectionObserver(
       (entries) => entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target) } }),
       { threshold: 0.12 },
     )
     document.querySelectorAll('.reveal, .reveal-stagger').forEach((el) => io.observe(el))
-    return () => io.disconnect()
+    // Safety net: never leave content invisible if the observer misses.
+    const t = setTimeout(() => document.querySelectorAll('.reveal, .reveal-stagger').forEach((el) => el.classList.add('in')), 3000)
+    return () => { io.disconnect(); clearTimeout(t) }
   }, [issues])
 
   const reports = (issues ?? []).reduce((a, i) => a + (i.reports_count || 0), 0)

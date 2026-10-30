@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom'
 
 export default function PublicIssues() {
   const [issues, setIssues] = useState<PublicIssue[] | null>(null)
+  const [allWards, setAllWards] = useState<string[]>([])
   const [err, setErr] = useState<unknown>(null)
   const [status, setStatus] = useState('')
   const [ward, setWard] = useState('')
@@ -22,8 +23,13 @@ export default function PublicIssues() {
       .catch(setErr)
   }
   useEffect(load, [status, responsible])
-
-  const wards = Array.from(new Set((issues ?? []).map((i) => i.ward).filter((w): w is string => !!w)))
+  // Ward options come from an unfiltered fetch so filtering never hides the other wards.
+  useEffect(() => {
+    api.publicIssues().then((r) => {
+      setAllWards(Array.from(new Set(r.issues.map((i) => i.ward).filter((w): w is string => !!w))))
+    }).catch(() => undefined)
+  }, [])
+  const wards = allWards
 
   return (
     <div className="container section">

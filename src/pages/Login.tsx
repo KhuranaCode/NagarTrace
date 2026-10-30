@@ -185,8 +185,8 @@ export default function Login() {
       {mode === 'otp' && !EMAIL_OTP_ENABLED ? (
       <div className="card pad-lg">
         <p style={{ marginTop: 0 }}>
-          Sign-in by email code is built and switches on once the project's mail service can send numeric codes -
-          right now it can only send link emails, and setting that up is with the project owner.
+          Sign-in by email code is built. It turns on when the project's mail service can send numeric codes -
+          today it can only send link emails.
         </p>
         <p className="muted" style={{ marginBottom: 0 }}>Password sign-in works today - use the Password tab.</p>
       </div>
