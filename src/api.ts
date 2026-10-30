@@ -96,7 +96,7 @@ export const api = {
   },
   issue: (id: string) => req<IssueDetail>(`/v1/issues/${id}`),
 
-  report: (body: { lat: number; lon: number; accuracy_m?: number; hazard: string; danger?: boolean; note?: string; photo_upload_id?: string; captured_at: string }, idempotencyKey: string) =>
+  report: (body: { lat: number; lon: number; accuracy_m?: number; hazard: string; hazards?: string[]; danger?: boolean; note?: string; photo_upload_id?: string; captured_at: string }, idempotencyKey: string) =>
     req<ReportResult>('/v1/reports', { method: 'POST', body, headers: { 'idempotency-key': idempotencyKey } }),
 
   stageUpload: async (lat: number, lon: number, file: Blob, contentType: string) => {

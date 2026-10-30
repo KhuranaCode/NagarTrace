@@ -522,3 +522,8 @@ a { color: var(--blue); }
 .update-area { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent, #e8590c); }
 
 .update-upcoming { border-style: dashed; opacity: 0.85; }
+
+/* Multi-hazard: extra selections and non-primary tags */
+.hazard-pick.sel.extra { border-color: #8a7bd8; background: #efecfb; }
+.hazard-pick .primary-chip { margin-left: 6px; font-size: .62rem; text-transform: uppercase; letter-spacing: .06em; background: var(--accent); color: #fff; border-radius: 999px; padding: 1px 7px; vertical-align: middle; }
+.hazard-tag.extra { opacity: .82; font-size: .8em; }

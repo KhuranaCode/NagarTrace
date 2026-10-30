@@ -47,12 +47,23 @@ export function StatusPill({ status }: { status: Status }) {
   return <span className={`pill st-${status}`}>{STATUS_META[status].label}</span>
 }
 
-export function HazardTag({ hazard }: { hazard: Hazard }) {
+export function HazardTag({ hazard, hazards }: { hazard: Hazard; hazards?: Hazard[] }) {
   const m = HAZARD_META[hazard] ?? HAZARD_META.other
+  const extras = (hazards ?? []).filter((h) => h !== hazard)
   return (
-    <span className="hazard-tag">
-      <HazardIcon kind={m.icon} /> {m.label}
-    </span>
+    <>
+      <span className="hazard-tag">
+        <HazardIcon kind={m.icon} /> {m.label}
+      </span>
+      {extras.map((h) => {
+        const em = HAZARD_META[h] ?? HAZARD_META.other
+        return (
+          <span key={h} className="hazard-tag extra" title="Also reported at this spot">
+            <HazardIcon kind={em.icon} /> {em.label}
+          </span>
+        )
+      })}
+    </>
   )
 }
 

@@ -7,6 +7,8 @@ export interface PublicIssue {
   complaint_no?: number | null
   complaint_id?: string | null
   hazard: Hazard
+  /** Full hazard set when the API serves it (>= the primary). Absent on older API heads. */
+  hazards?: Hazard[]
   status: Status
   severity: number
   ward: string | null
