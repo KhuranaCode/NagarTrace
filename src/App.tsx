@@ -11,6 +11,7 @@ import PublicIssueDetail from './pages/PublicIssueDetail'
 import Privacy from './pages/Privacy'
 import PublicIssues from './pages/PublicIssues'
 import Report from './pages/Report'
+import Settings from './pages/Settings'
 import Updates from './pages/Updates'
 import { TopBar } from './ui'
 
@@ -65,6 +66,7 @@ export default function App() {
         <Route path="/report" element={<Report />} />
         <Route path="/app" element={<Dashboard />} />
         <Route path="/app/issues/:id" element={<IssueDetail />} />
+        <Route path="/app/settings" element={<Settings />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/updates" element={<Updates />} />
         <Route path="/privacy" element={<Privacy />} />

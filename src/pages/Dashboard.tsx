@@ -107,7 +107,7 @@ export default function Dashboard() {
   return (
     <div className="container section">
       <h1 style={{ letterSpacing: '-0.02em' }}>Namaste{me.alias ? `, ${me.alias}` : ''}</h1>
-      <p className="muted">Your reports, your ward, your roles.</p>
+      <p className="muted">Your reports, your ward, your roles. <Link to="/app/settings">Settings →</Link></p>
 
       {showWelcome ? (
         <div className="card pad-lg welcome-card" role="status">
