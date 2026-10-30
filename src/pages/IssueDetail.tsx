@@ -7,6 +7,7 @@ import type { EvidenceMeta } from '../types'
 import { useAuth } from '../auth'
 import type { IssueDetail as Detail, Me } from '../types'
 import { Deadline, ErrorBox, fmtDate, HazardTag, MapView, Spinner, STATUS_META, StatusPill, SyntheticBadge } from '../ui'
+import Reminders from '../components/Reminders'
 
 const EVENT_LABELS: Record<string, string> = {
   reported: 'Report submitted',
@@ -205,6 +206,8 @@ function FollowUpCard({ d }: { d: Detail }) {
 }
 
 export default function IssueDetail() {
+  const [pipelineAvailable, setPipelineAvailable] = useState(true)
+  const onPipelineUnavailable = useCallback(() => setPipelineAvailable(false), [])
   const { id } = useParams<{ id: string }>()
   const { session, ready } = useAuth()
   const [d, setD] = useState<Detail | null>(null)
@@ -359,6 +362,9 @@ export default function IssueDetail() {
       </div>
 
       <FollowUpCard d={d} />
+      {/* Self-reminder pipeline UI: renders only when the API exposes the follow-up routes;
+          on older API heads the static honest FollowUpCard above stays as the fallback. */}
+      {pipelineAvailable ? <Reminders d={d} onUnavailable={onPipelineUnavailable} /> : null}
 
       {actMsg ? <div className="notice-box">{actMsg}</div> : null}
 

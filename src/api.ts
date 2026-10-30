@@ -42,6 +42,11 @@ async function req<T>(path: string, opts: { method?: string; body?: unknown; hea
   return (await res.json()) as T
 }
 
+
+export interface FollowupStage { day: number; subject: string; body_text: string }
+export interface FollowupCampaign { id: string; audience: string; recipient_descriptor: string; recipient_verified: boolean; state: string; stages: FollowupStage[]; created_at: string }
+export interface FollowupDelivery { campaign_id: string; stage_day: number; due_at: string; state: string; attempt_count: number; last_error: string | null }
+
 export interface Health {
   ok: boolean
   verification_mode: string
@@ -150,4 +155,13 @@ export const api = {
   createOrg: (body: { municipality_org_id: string; kind: 'contractor' | 'utility'; name: string; is_synthetic: boolean }) =>
     req<{ org_id: string }>('/v1/admin/orgs', { method: 'POST', body }),
   grantMembership: (body: { user_id: string; org_id: string; role: string }) => req<unknown>('/v1/admin/memberships', { method: 'POST', body }),
+  // Follow-up reminder pipeline (feature-detected: absent on older API heads -> ApiError 404)
+  mailConsent: (kind: 'report_reminders', granted: boolean, scope_version: string) =>
+    req<{ kind: string; granted: boolean }>('/v1/me/mail-consent', { method: 'POST', body: { kind, granted, scope_version } }),
+  followupCampaigns: (issueId: string) =>
+    req<{ campaigns: FollowupCampaign[]; deliveries: FollowupDelivery[] }>(`/v1/issues/${issueId}/followup-campaigns`),
+  createFollowupCampaign: (issueId: string, body: { audience: 'reporter' | 'authority'; recipient_descriptor: string; stages: FollowupStage[]; idempotency_key: string }) =>
+    req<{ campaign_id: string; state: string; replayed?: boolean }>(`/v1/issues/${issueId}/followup-campaigns`, { method: 'POST', body }),
+  deleteFollowupCampaign: (campaignId: string) =>
+    req<{ revoked: boolean }>(`/v1/followup-campaigns/${campaignId}`, { method: 'DELETE' }),
 }
