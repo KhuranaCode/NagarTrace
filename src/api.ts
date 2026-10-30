@@ -64,11 +64,12 @@ const realApi = {
   leaderboard: (ward: string | undefined, period: 'weekly' | 'all') =>
     req<{ leaderboard: LeaderRow[] }>(`/v1/leaderboard?period=${period}${ward ? `&ward=${encodeURIComponent(ward)}` : ''}`),
 
-  publicIssues: (f: { status?: string; ward?: string; responsible?: string } = {}) => {
+  publicIssues: (f: { status?: string; ward?: string; responsible?: string; limit?: number } = {}) => {
     const q = new URLSearchParams()
     if (f.status) q.set('status', f.status)
     if (f.ward) q.set('ward', f.ward)
     if (f.responsible) q.set('responsible', f.responsible)
+    if (f.limit) q.set('limit', String(f.limit))
     const s = q.toString()
     return req<{ issues: PublicIssue[] }>(`/v1/public/issues${s ? `?${s}` : ''}`, { auth: false })
   },
