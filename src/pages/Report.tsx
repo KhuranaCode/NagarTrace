@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { DEMO } from '../config'
-import { api, ApiError } from '../api'
+import { api, ApiError, type Advisory } from '../api'
 import { useAuth } from '../auth'
 import type { Hazard, ReportResult } from '../types'
 import { ErrorBox, HAZARD_META, HazardIcon } from '../ui'
@@ -57,6 +57,11 @@ export default function Report() {
   const idemKey = useRef<string>(crypto.randomUUID())
   const pointsBaseline = useRef<number | null>(null)
   const [pointsAwarded, setPointsAwarded] = useState<number | null>(null)
+  // AI pre-check (owner-laptop advisory). Honest states: never a fabricated suggestion;
+  // when the laptop is offline we say so and the normal submit path is unchanged.
+  const [aiState, setAiState] = useState<'idle' | 'checking' | 'done' | 'unavailable'>('idle')
+  const [advisory, setAdvisory] = useState<Advisory | null>(null)
+  const [aiReason, setAiReason] = useState<string | null>(null)
 
   // Baseline for honest points feedback: we only ever show the measured delta.
   useEffect(() => {
@@ -103,6 +108,27 @@ export default function Report() {
     return () => clearInterval(t)
   }, [gps, photo])
   useEffect(() => () => { if (watchId.current !== null) navigator.geolocation.clearWatch(watchId.current) }, [])
+
+  const runAiCheck = async () => {
+    if (!hazard || !gps) return
+    setAiState('checking')
+    setAdvisory(null)
+    setAiReason(null)
+    const merged = (otherText.trim() ? `Other: ${otherText.trim()}${note.trim() ? ' - ' + note.trim() : ''}` : note.trim()) || undefined
+    try {
+      const r = await api.aiReportCheck({ hazard, note: merged, lat: gps.lat, lon: gps.lon })
+      if (r.ai_available) {
+        setAdvisory(r.advisory)
+        setAiState('done')
+      } else {
+        setAiReason(r.reason)
+        setAiState('unavailable')
+      }
+    } catch {
+      setAiReason('network')
+      setAiState('unavailable')
+    }
+  }
 
   const captureGps = () => {
     if (!('geolocation' in navigator)) { setGpsErr('This browser or device has no location access'); return }
@@ -408,6 +434,27 @@ export default function Report() {
           </table>
           {staleCapture ? <div className="warn-box">This GPS reading is getting old. Go back and refresh it before sending.</div> : null}
           {err ? <ErrorBox error={err} onRetry={() => setErr(null)} /> : null}
+          <div className="notice-box" style={{ marginTop: 12 }}>
+            <strong>AI pre-check (optional)</strong>
+            {aiState === 'idle' ? (
+              <p className="small-note" style={{ marginBottom: 0 }}>Get an advisory read on your draft before sending. It runs on the project owner's own machine - it never verifies your report and nothing is sent to officials automatically. <button className="btn ghost" style={{ marginLeft: 6 }} onClick={runAiCheck}>Check my draft</button></p>
+            ) : null}
+            {aiState === 'checking' ? <p className="small-note" style={{ marginBottom: 0 }}>Checking… (can take up to about 25 seconds)</p> : null}
+            {aiState === 'unavailable' ? (
+              <p className="small-note" style={{ marginBottom: 0 }}>AI check is offline right now{aiReason ? ` (${aiReason.replace(/_/g, ' ')})` : ''}. Your report is unaffected - you can send it normally. <button className="btn ghost" style={{ marginLeft: 6 }} onClick={runAiCheck}>Retry</button></p>
+            ) : null}
+            {aiState === 'done' && advisory ? (
+              <div>
+                <p className="small-note" style={{ marginBottom: 4 }}><em>Advisory only - not a verification, not sent anywhere else.</em></p>
+                <p style={{ margin: '4px 0' }}>{advisory.summary}</p>
+                {advisory.severity_hint ? <p className="small-note" style={{ margin: '2px 0' }}>Severity hint: {advisory.severity_hint}</p> : null}
+                {advisory.suggested_hazard && advisory.suggested_hazard !== hazard ? <p className="small-note" style={{ margin: '2px 0' }}>Suggests looking at: {advisory.suggested_hazard} (your pick stays yours)</p> : null}
+                {advisory.missing_details.length ? (
+                  <p className="small-note" style={{ margin: '2px 0' }}>Worth adding: {advisory.missing_details.join('; ')}</p>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
           <p className="small-note">Sending creates a public-status entry (rounded location, no name, no photo). Duplicate reports within about 30 m are merged automatically.</p>
           <div className="action-row">
             <button className="btn ghost" onClick={() => setStep(1)}>Back</button>

@@ -55,6 +55,18 @@ export interface Health {
   policy: string
 }
 
+export interface AiStatus { configured: boolean; available: boolean; model?: string; reason?: string }
+export interface Advisory {
+  summary: string
+  severity_hint: 'low' | 'medium' | 'high' | null
+  suggested_hazard: string | null
+  missing_details: string[]
+  model: string
+  advisory: true
+}
+/** 503 body when the owner laptop is offline: never a fabricated suggestion. */
+export interface AiUnavailable { ai_available: false; reason: string }
+
 const realApi = {
   health: () => req<Health>('/health', { auth: false }),
 
@@ -180,6 +192,19 @@ const realApi = {
     req<{ campaign_id: string; state: string; replayed?: boolean }>(`/v1/issues/${issueId}/followup-campaigns`, { method: 'POST', body }),
   deleteFollowupCampaign: (campaignId: string) =>
     req<{ revoked: boolean }>(`/v1/followup-campaigns/${campaignId}`, { method: 'DELETE' }),
+
+  /** Owner-laptop AI bridge. Status: honest availability. Check: advisory only, 503-shaped when offline. */
+  aiStatus: () => req<AiStatus>('/v1/ai/status'),
+  aiReportCheck: async (body: { hazard: string; note?: string; lat: number; lon: number; ward?: string }): Promise<{ ai_available: true; advisory: Advisory } | AiUnavailable> => {
+    try {
+      return await req<{ ai_available: true; advisory: Advisory }>('/v1/ai/report-check', { method: 'POST', body })
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 503) return { ai_available: false, reason: e.code }
+      // The deployed API may predate these routes: 404 = feature not live yet, say so honestly.
+      if (e instanceof ApiError && e.status === 404) return { ai_available: false, reason: 'not_live_yet' }
+      throw e
+    }
+  },
 }
 
 export type Api = typeof realApi
