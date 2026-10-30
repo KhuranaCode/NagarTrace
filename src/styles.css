@@ -289,7 +289,9 @@ a { color: var(--blue); }
   font: inherit; cursor: pointer; text-align: left;
   background: var(--card); border: 2px solid var(--line); border-radius: 14px; padding: 16px;
   font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap; min-width: 0; overflow-wrap: anywhere;
 }
+.hazard-pick .primary-chip { flex: 0 0 auto; }
 .hazard-pick:hover { border-color: #c9c4b6; }
 .hazard-pick.sel { border-color: var(--accent); background: var(--accent-soft); }
 .hazard-pick .ic { font-size: 1.5rem; }
