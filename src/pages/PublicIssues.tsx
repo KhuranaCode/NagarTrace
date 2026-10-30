@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { PublicIssue, Status } from '../types'
-import { Empty, ErrorBox, MapView, Spinner, STATUS_META } from '../ui'
+import { Empty, ErrorBox, IndiaMap, Spinner, STATUS_META } from '../ui'
 import { IssueCard } from './shared'
 import { useNavigate } from 'react-router-dom'
 
@@ -57,10 +57,11 @@ export default function PublicIssues() {
       {issues && issues.length === 0 ? <Empty>No reports to show yet. When a genuine report is filed, it appears here.</Empty> : null}
       {issues && issues.length > 0 ? (
         <>
-          <MapView
+          <IndiaMap
             pins={issues.map((i) => ({ id: i.id, lat: i.location.lat, lon: i.location.lon, status: i.status, label: `${i.hazard} - ${i.status}` }))}
             onSelect={(id) => nav(`/issues/${id}`)}
           />
+          <p className="small-note" style={{ textAlign: 'center', marginTop: 6 }}>Schematic overview - tap a dot to open the issue with its exact map.</p>
           <div className="grid cols-2" style={{ marginTop: 20 }}>
             {issues.map((i) => (
               <IssueCard key={i.id} issue={i} to={`/issues/${i.id}`} />

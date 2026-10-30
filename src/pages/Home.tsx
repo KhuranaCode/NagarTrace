@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import Counters from '../components/Counters'
 import type { PublicIssue } from '../types'
-import { Deadline, Empty, ErrorBox, HazardTag, MapView, Spinner, StatusPill, SyntheticBadge } from '../ui'
+import { Deadline, Empty, ErrorBox, HazardTag, IndiaMap, Spinner, StatusPill, SyntheticBadge } from '../ui'
 import { IssueCard } from './shared'
 
 const STEPS = [
@@ -200,8 +200,8 @@ export default function Home() {
       <section className="section reveal" style={{ background: 'var(--paper)', paddingTop: 0 }}>
         <div className="container">
           <span className="mono-label">Public status · no login</span>
-          <h2>Live on the map</h2>
-          <p className="sub">Latest from the public record. Public locations are rounded to about 11 m. Photos are never shown publicly.</p>
+          <h2>Live across India</h2>
+          <p className="sub">Every genuine report, live on one map of India. Schematic overview - public locations are rounded to about 11 m, and the exact spot lives on each issue's own map. Photos are never shown publicly.</p>
           {err ? <ErrorBox error={err} onRetry={load} /> : null}
           {!issues && !err ? <Spinner label="Loading live issues. The free server sleeps when idle - first load can take a minute." /> : null}
           {issues ? (
@@ -209,7 +209,7 @@ export default function Home() {
               <Empty>No reports yet. Be the first to report a hazard.</Empty>
             ) : (
               <>
-                <MapView
+                <IndiaMap
                   pins={issues.map((i) => ({ id: i.id, lat: i.location.lat, lon: i.location.lon, status: i.status, label: `${i.hazard} - ${i.status}` }))}
                   onSelect={(id) => nav(`/issues/${id}`)}
                 />

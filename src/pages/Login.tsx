@@ -140,14 +140,24 @@ export default function Login() {
       <h1 style={{ letterSpacing: '-0.02em' }}>{mode === 'in' ? 'Sign in' : 'Create your account'}</h1>
       <p className="muted">Report hazards, track repairs and confirm fixes in your ward.</p>
 
-      {GOOGLE_AUTH_ENABLED ? (
-        <div className="card pad-lg" style={{ marginBottom: 14 }}>
+      <div className="card pad-lg" style={{ marginBottom: 14 }}>
+        {GOOGLE_AUTH_ENABLED ? (
           <button className="btn dark block" onClick={google} disabled={busy}>
             Continue with Google
           </button>
-          <p className="small-note" style={{ textAlign: 'center', margin: '10px 0 0' }}>or use email below</p>
-        </div>
-      ) : null}
+        ) : (
+          <>
+            <button className="btn dark block" disabled title="Google sign-in is not open to everyone yet">
+              Continue with Google
+            </button>
+            <p className="small-note" style={{ textAlign: 'center', margin: '10px 0 0' }}>
+              Google sign-in is ready in the app but stays locked until Google's app review is completed by the
+              project owner. Email sign-in below works today.
+            </p>
+          </>
+        )}
+        {GOOGLE_AUTH_ENABLED ? <p className="small-note" style={{ textAlign: 'center', margin: '10px 0 0' }}>or use email below</p> : null}
+      </div>
 
       <form onSubmit={submit} className="card pad-lg">
         <div className="field">

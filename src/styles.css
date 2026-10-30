@@ -471,3 +471,17 @@ a { color: var(--blue); }
   .photo-strip { grid-template-columns: 1fr; }
   .photo-strip img { height: 180px; }
 }
+
+/* ---------- schematic India overview map ---------- */
+.india-map { display: flex; justify-content: center; }
+.india-map svg { height: 100%; max-width: 100%; }
+.india-outline { fill: #eceade; stroke: var(--ink); stroke-width: 0.12; stroke-linejoin: round; }
+.india-dot { cursor: pointer; outline: none; }
+.india-dot:focus-visible circle:last-child { stroke: var(--accent); stroke-width: 0.18; }
+.india-pulse { opacity: 0.55; animation: india-pulse 2.4s var(--ease-out) infinite; transform-origin: center; transform-box: fill-box; }
+@keyframes india-pulse {
+  0% { transform: scale(0.5); opacity: 0.55; }
+  70% { transform: scale(2.4); opacity: 0; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .india-pulse { animation: none; opacity: 0.3; } }

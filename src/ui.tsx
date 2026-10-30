@@ -249,3 +249,38 @@ export function MapView({ pins, height = 380, onSelect }: { pins: MapPin[]; heig
 export function Empty({ children }: { children: React.ReactNode }) {
   return <div className="empty">{children}</div>
 }
+
+// Schematic India overview map (Natural Earth outline, public domain - see src/india.ts).
+// Shows real reports at their projected positions; schematic only - exact locations
+// live on the per-issue map and in the GPS evidence itself.
+import { INDIA_PATH, INDIA_VIEWBOX, indiaProject } from './india'
+
+const INDIA_STATUS_COLORS: Record<Status, string> = PIN_COLORS
+
+export function IndiaMap({ pins, height = 420, onSelect }: { pins: MapPin[]; height?: number; onSelect?: (id: string) => void }) {
+  return (
+    <div className="india-map" style={{ height }}>
+      <svg viewBox={INDIA_VIEWBOX} role="img" aria-label="Schematic map of India showing reported issues" preserveAspectRatio="xMidYMid meet">
+        <path d={INDIA_PATH} className="india-outline" />
+        {pins.map((p) => {
+          const { x, y } = indiaProject(p.lat, p.lon)
+          const active = p.status === 'reported' || p.status === 'reopened' || p.status === 'awaiting_confirmation'
+          return (
+            <g
+              key={p.id}
+              className="india-dot"
+              tabIndex={onSelect ? 0 : undefined}
+              role={onSelect ? 'link' : undefined}
+              onClick={() => onSelect?.(p.id)}
+              onKeyDown={(e) => { if (onSelect && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onSelect(p.id) } }}
+            >
+              <title>{p.label}</title>
+              {active ? <circle cx={x} cy={y} r={0.55} className="india-pulse" fill={INDIA_STATUS_COLORS[p.status] ?? '#0e1b2c'} /> : null}
+              <circle cx={x} cy={y} r={0.34} fill={INDIA_STATUS_COLORS[p.status] ?? '#0e1b2c'} stroke="#fff" strokeWidth={0.09} />
+            </g>
+          )
+        })}
+      </svg>
+    </div>
+  )
+}
