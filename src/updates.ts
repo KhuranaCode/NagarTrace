@@ -24,14 +24,18 @@ export const UPDATES: UpdateEntry[] = [
   },
   {
     date: '2026-10-30',
-    title: 'Streaks API',
-    detail: 'Daily streaks derived only from verified activity (verified reports, first-reporter bonus, confirmed fixes). Per-user timezone, idempotent recompute. Live after the backend deployment owner applies it.',
-    area: 'API',
-  },
-  {
-    date: '2026-10-30',
     title: 'Interactive India map on the landing page',
     detail: 'The overview map is now an accurate India boundary (DataMeet composite, CC BY 4.0) instead of a generic tile map.',
     area: 'Website',
+  },
+]
+
+/** Built and code-reviewed, but NOT live yet. Never presented as shipped. */
+export const UPCOMING: UpdateEntry[] = [
+  {
+    date: '2026-10-30',
+    title: 'Streaks API',
+    detail: 'Daily streaks derived only from verified activity (verified reports, first-reporter bonus, confirmed fixes). Code and tests are done; it goes live when the backend deployment owner applies it.',
+    area: 'API',
   },
 ]
