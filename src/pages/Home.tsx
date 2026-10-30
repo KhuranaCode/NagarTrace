@@ -206,7 +206,10 @@ export default function Home() {
           {!issues && !err ? <Spinner label="Loading live issues. The free server sleeps when idle - first load can take a minute." /> : null}
           {issues ? (
             issues.length === 0 ? (
-              <Empty>No reports yet. Be the first to report a hazard.</Empty>
+              <>
+                <IndiaMap pins={[]} />
+                <Empty>No reports yet - the map lights up with the first genuine report. Be the first.</Empty>
+              </>
             ) : (
               <>
                 <IndiaMap
