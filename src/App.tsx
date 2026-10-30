@@ -8,6 +8,7 @@ import IssueDetail from './pages/IssueDetail'
 import Leaderboard from './pages/Leaderboard'
 import Login from './pages/Login'
 import PublicIssueDetail from './pages/PublicIssueDetail'
+import Privacy from './pages/Privacy'
 import PublicIssues from './pages/PublicIssues'
 import Report from './pages/Report'
 import Updates from './pages/Updates'
@@ -66,6 +67,7 @@ export default function App() {
         <Route path="/app/issues/:id" element={<IssueDetail />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/updates" element={<Updates />} />
+        <Route path="/privacy" element={<Privacy />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>

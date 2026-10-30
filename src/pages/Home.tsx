@@ -266,6 +266,8 @@ export default function Home() {
               <Link to="/report">Report a hazard</Link>
               <Link to="/leaderboard">Ward leaderboard</Link>
               <a href="https://github.com/KhuranaCode/nagartrace-api" target="_blank" rel="noreferrer">API source</a>
+              <Link to="/privacy">Privacy policy</Link>
+              <Link to="/updates">Updates</Link>
             </div>
           </div>
           <div className="footer-word">NAGAR<span>TRACE</span></div>
