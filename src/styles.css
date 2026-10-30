@@ -503,3 +503,13 @@ a { color: var(--blue); }
 .photo-details li { margin-bottom: 6px; }
 .photo-details li.sig-absent strong { color: var(--amber); }
 .photo-details li.sig-unknown strong { color: var(--muted); }
+
+/* First-visit welcome (dashboard) */
+.welcome-card { border-left: 4px solid var(--accent, #e8590c); }
+.welcome-kicker {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--accent, #e8590c);
+}
+.welcome-steps { margin: 12px 0 16px; padding-left: 20px; color: var(--muted, #555); }
+.welcome-steps li { margin: 6px 0; }
+.welcome-steps strong { color: inherit; }

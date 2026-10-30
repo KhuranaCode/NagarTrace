@@ -21,6 +21,14 @@ export default function Dashboard() {
   const [ward, setWard] = useState('')
   const [profileMsg, setProfileMsg] = useState<string | null>(null)
   const [escMsg, setEscMsg] = useState<string | null>(null)
+  // First-visit welcome: shown until dismissed (per browser), only while the account has no reports.
+  const [welcomed, setWelcomed] = useState<boolean>(() => {
+    try { return localStorage.getItem('nt_welcomed') === '1' } catch { return true }
+  })
+  const dismissWelcome = () => {
+    try { localStorage.setItem('nt_welcomed', '1') } catch { /* private mode: just hide for this visit */ }
+    setWelcomed(true)
+  }
 
   const load = useCallback(async () => {
     setErr(null)
@@ -94,10 +102,33 @@ export default function Dashboard() {
     }
   }
 
+  const showWelcome = !welcomed && mine.length === 0
+
   return (
     <div className="container section">
       <h1 style={{ letterSpacing: '-0.02em' }}>Namaste{me.alias ? `, ${me.alias}` : ''}</h1>
       <p className="muted">Your reports, your ward, your roles.</p>
+
+      {showWelcome ? (
+        <div className="card pad-lg welcome-card" role="status">
+          <div className="welcome-kicker">Welcome to NagarTrace</div>
+          <h2 style={{ marginTop: 6 }}>Every fixed road starts with one verified report.</h2>
+          <p className="muted" style={{ maxWidth: 560 }}>
+            NagarTrace routes what you report to the party actually responsible - the contractor under
+            warranty, the utility that dug the cut, or the municipality - and keeps the record public
+            until the repair is confirmed.
+          </p>
+          <ol className="welcome-steps">
+            <li><strong>Set your public alias</strong> below - your real name is never shown.</li>
+            <li><strong>Report a hazard</strong> with a photo and its location.</li>
+            <li><strong>Track it to a confirmed repair</strong> - you get the record, the ward gets the fix.</li>
+          </ol>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 4 }}>
+            <Link to="/report" className="btn primary" onClick={dismissWelcome}>Report your first hazard →</Link>
+            <button className="btn" onClick={dismissWelcome}>Got it</button>
+          </div>
+        </div>
+      ) : null}
 
       {!me.alias ? (
         <div className="card pad-lg" style={{ marginBottom: 20 }}>
