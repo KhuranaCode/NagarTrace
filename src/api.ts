@@ -160,7 +160,7 @@ export const api = {
     req<{ kind: string; granted: boolean }>('/v1/me/mail-consent', { method: 'POST', body: { kind, granted, scope_version } }),
   followupCampaigns: (issueId: string) =>
     req<{ campaigns: FollowupCampaign[]; deliveries: FollowupDelivery[] }>(`/v1/issues/${issueId}/followup-campaigns`),
-  createFollowupCampaign: (issueId: string, body: { audience: 'reporter' | 'authority'; recipient_descriptor: string; stages: FollowupStage[]; idempotency_key: string }) =>
+  createFollowupCampaign: (issueId: string, body: { audience: 'reporter' | 'authority'; recipient_descriptor: string; stages: FollowupStage[]; idempotency_key: string; recipient_email: string }) =>
     req<{ campaign_id: string; state: string; replayed?: boolean }>(`/v1/issues/${issueId}/followup-campaigns`, { method: 'POST', body }),
   deleteFollowupCampaign: (campaignId: string) =>
     req<{ revoked: boolean }>(`/v1/followup-campaigns/${campaignId}`, { method: 'DELETE' }),

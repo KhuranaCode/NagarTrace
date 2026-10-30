@@ -48,7 +48,7 @@ export function stageTexts(d: IssueDetail): FollowupStage[] {
   }))
 }
 
-export default function Reminders({ d, onUnavailable }: { d: IssueDetail; onUnavailable: () => void }) {
+export default function Reminders({ d, email, onUnavailable }: { d: IssueDetail; email: string | null; onUnavailable: () => void }) {
   const [supported, setSupported] = useState<boolean | null>(null)
   const [campaigns, setCampaigns] = useState<Campaign[]>([])
   const [deliveries, setDeliveries] = useState<Delivery[]>([])
@@ -79,7 +79,7 @@ export default function Reminders({ d, onUnavailable }: { d: IssueDetail; onUnav
       await api.mailConsent('report_reminders', true, CONSENT_VERSION)
       await api.createFollowupCampaign(d.id, {
         audience: 'reporter', recipient_descriptor: 'self', stages,
-        idempotency_key: crypto.randomUUID(),
+        idempotency_key: crypto.randomUUID(), recipient_email: email ?? '',
       })
       await load()
     } catch (e: any) {
@@ -110,7 +110,7 @@ export default function Reminders({ d, onUnavailable }: { d: IssueDetail; onUnav
         </>
       ) : (
         <>
-          <p className="muted">Get an email at days 7, 10, 15 and 30 if this issue is still open. You approve the exact texts now; they only ever go to your own sign-in address.</p>
+          <p className="muted">Get an email at days 7, 10, 15 and 30 if this issue is still open. You approve the exact texts now; they only ever go to your own sign-in address{email ? <> (<strong>{email}</strong>)</> : null}.</p>
           <details className="photo-details">
             <summary>Read the exact reminder texts</summary>
             {stages.map((s) => (
@@ -125,7 +125,7 @@ export default function Reminders({ d, onUnavailable }: { d: IssueDetail; onUnav
             <span className="small-note">{CONSENT_TEXT}</span>
           </label>
           {msg ? <p className="muted">{msg}</p> : null}
-          <button className="btn primary" disabled={busy || !consent} onClick={setup}>
+          <button className="btn primary" disabled={busy || !consent || !email} onClick={setup}>
             {busy ? 'Setting up…' : 'Approve these texts and start reminders'}
           </button>
           <p className="small-note" style={{ marginBottom: 0 }}>Today no email provider is connected, so reminders will show as waiting until one is - the schedule and your approval are real and recorded either way.</p>

@@ -364,7 +364,7 @@ export default function IssueDetail() {
       <FollowUpCard d={d} />
       {/* Self-reminder pipeline UI: renders only when the API exposes the follow-up routes;
           on older API heads the static honest FollowUpCard above stays as the fallback. */}
-      {pipelineAvailable ? <Reminders d={d} onUnavailable={onPipelineUnavailable} /> : null}
+      {pipelineAvailable ? <Reminders d={d} email={session?.user?.email ?? null} onUnavailable={onPipelineUnavailable} /> : null}
 
       {actMsg ? <div className="notice-box">{actMsg}</div> : null}
 
