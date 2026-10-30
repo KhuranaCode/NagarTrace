@@ -110,19 +110,19 @@ export default function Home() {
         <div className="container">
           <div className="photo-strip reveal">
             <figure>
-              <img src="/NagarTrace/photos/broken-road-delhi.jpg" alt="A deep open pothole breaking through a city road surface" loading="lazy" />
+              <img src={`${import.meta.env.BASE_URL}photos/broken-road-delhi.jpg`} alt="A deep open pothole breaking through a city road surface" loading="lazy" />
               <figcaption>
                 <a href="https://commons.wikimedia.org/wiki/File:Broken_Roads_in_India%27s_Capital_New_Delhi.jpg" target="_blank" rel="noreferrer">Photo: Rrthakur22, CC BY-SA 4.0</a>
               </figcaption>
             </figure>
             <figure>
-              <img src="/NagarTrace/photos/potholes-road.jpg" alt="A rain-soaked rural road filled with waterlogged potholes" loading="lazy" />
+              <img src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="A rain-soaked rural road filled with waterlogged potholes" loading="lazy" />
               <figcaption>
                 <a href="https://commons.wikimedia.org/wiki/File:Potholes_on_road.jpg" target="_blank" rel="noreferrer">Photo: KEmel49, CC BY-SA 4.0</a>
               </figcaption>
             </figure>
             <figure>
-              <img src="/NagarTrace/photos/deformed-road-bengaluru.jpg" alt="Deformed, cracked asphalt on an urban street" loading="lazy" />
+              <img src={`${import.meta.env.BASE_URL}photos/deformed-road-bengaluru.jpg`} alt="Deformed, cracked asphalt on an urban street" loading="lazy" />
               <figcaption>
                 <a href="https://commons.wikimedia.org/wiki/File:Roads_deformed_T_munnekollala_Bengaluru.jpg" target="_blank" rel="noreferrer">Photo: Gangaasoonu, CC BY-SA 4.0</a>
               </figcaption>
