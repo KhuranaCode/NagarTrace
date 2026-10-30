@@ -4,6 +4,7 @@ import { api } from '../api'
 import { useAuth } from '../auth'
 import type { Badges, Issue, Me, PublicIssue, Scorecard } from '../types'
 import { Empty, ErrorBox, Spinner, SyntheticBadge } from '../ui'
+import StreakCard from '../components/StreakCard'
 import { IssueCard } from './shared'
 
 export default function Dashboard() {
@@ -120,6 +121,8 @@ export default function Dashboard() {
         <div className="kpi"><div className="n">{mine.length}</div><div className="l">Issues you follow</div></div>
         <div className="kpi"><div className="n">{me.ward ?? '—'}</div><div className="l">Ward</div></div>
       </div>
+
+      <StreakCard />
 
       {badges ? (
         <div className="card" style={{ marginBottom: 22 }}>
