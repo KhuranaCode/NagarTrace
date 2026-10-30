@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "dev": "vite",
-    "build:demo": "VITE_DEMO=1 vite build --outDir dist-demo",
     "build": "vite build && cp dist/index.html dist/404.html",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",

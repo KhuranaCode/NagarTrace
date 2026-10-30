@@ -15,7 +15,6 @@ import Report from './pages/Report'
 import Settings from './pages/Settings'
 import Updates from './pages/Updates'
 import { TopBar } from './ui'
-import { DEMO } from './config'
 
 function oauthErrorFromUrl(): string | null {
   if (typeof window === 'undefined') return null

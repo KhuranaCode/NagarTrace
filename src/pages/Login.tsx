@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth'
-import { DEMO } from '../config'
 import { EMAIL_OTP_ENABLED, GOOGLE_AUTH_ENABLED } from '../config'
 
 function retrySeconds(err: string): number | null {
@@ -194,9 +193,8 @@ export default function Login() {
       ) : mode === 'otp' ? (
       <form onSubmit={submit} className="card pad-lg">
         <div className="field">
-          <label htmlFor="email">{DEMO ? 'ID' : 'Email'}</label>
-          <input id="email" type={DEMO ? 'text' : 'email'} required autoComplete={DEMO ? 'username' : 'email'} value={email} onChange={(e) => setEmail(e.target.value)} disabled={otpStage === 'code'} />
-          {DEMO ? <p className="sub" style={{ marginTop: 6, fontSize: 12 }}>Demo build: sign in with ID <b>demo</b> and password <b>demo</b>. This is a mock account with simulated data only - do not enter a real password.</p> : null}
+          <label htmlFor="email">Email</label>
+          <input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={otpStage === 'code'} />
         </div>
         {otpStage === 'code' ? (
           <div className="field">

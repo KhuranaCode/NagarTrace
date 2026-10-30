@@ -1,6 +1,6 @@
 import { createClient, type Session } from '@supabase/supabase-js'
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { DEMO, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './config'
+import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './config'
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
 
@@ -18,26 +18,11 @@ interface AuthState {
 
 const Ctx = createContext<AuthState>(null as unknown as AuthState)
 
-function demoSession(): Session {
-  return {
-    access_token: 'demo-token', token_type: 'bearer', expires_in: 86400,
-    expires_at: Math.floor(Date.now() / 1000) + 86400, refresh_token: 'demo-refresh',
-    user: { id: 'demo-user', aud: 'authenticated', role: 'authenticated', email: 'demo@nagartrace.invalid', app_metadata: {}, user_metadata: {}, identities: [], created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  } as unknown as Session
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
-    if (DEMO) {
-      // Demo build: no real account exists. The mock persona signs in only with
-      // the public demo/demo credentials and lives in sessionStorage, nothing else.
-      if (sessionStorage.getItem('nagartrace-demo-auth') === '1') setSession(demoSession())
-      setReady(true)
-      return
-    }
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)
       setReady(true)
@@ -47,20 +32,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    if (DEMO) {
-      if (email.trim().toLowerCase() === 'demo' && password === 'demo') {
-        sessionStorage.setItem('nagartrace-demo-auth', '1')
-        setSession(demoSession())
-        return null
-      }
-      return 'Demo build: sign in with ID demo and password demo. This is a mock account - do not use a real password here.'
-    }
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     return error ? error.message : null
   }
 
   const signUp = async (email: string, password: string) => {
-    if (DEMO) return { error: 'Demo build: account creation is disabled. Sign in with ID demo and password demo.', needsConfirmation: false }
     const emailRedirectTo = import.meta.env.DEV ? 'http://localhost:3000/' : 'https://khuranacode.github.io/NagarTrace/'
     const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo } })
     if (error) return { error: error.message, needsConfirmation: false }
@@ -69,7 +45,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const requestEmailOtp = async (email: string) => {
-    if (DEMO) return 'Demo build: email codes are disabled. Sign in with ID demo and password demo.'
     // Sends a one-time code when the project's email template includes {{ .Token }}.
     // shouldCreateUser lets a new email sign up and get confirmed by the same code.
     const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } })
@@ -77,32 +52,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const verifyEmailOtp = async (email: string, token: string) => {
-    if (DEMO) return 'Demo build: email codes are disabled. Sign in with ID demo and password demo.'
     // Successful verification both signs the user in and confirms the email.
     const { error } = await supabase.auth.verifyOtp({ email, token, type: 'email' })
     return error ? error.message : null
   }
 
   const resendConfirmation = async (email: string) => {
-    if (DEMO) return 'Demo build: no real account exists, so there is nothing to confirm. Sign in with ID demo and password demo.'
     const emailRedirectTo = import.meta.env.DEV ? 'http://localhost:3000/' : 'https://khuranacode.github.io/NagarTrace/'
     const { error } = await supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo } })
     return error ? error.message : null
   }
 
   const signInWithGoogle = async () => {
-    if (DEMO) return 'Demo build: Google sign-in is disabled. Use ID demo and password demo instead.'
     const redirectTo = import.meta.env.DEV ? 'http://localhost:3000/' : 'https://khuranacode.github.io/NagarTrace/'
     const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } })
     return error ? error.message : null
   }
 
   const signOut = async () => {
-    if (DEMO) {
-      sessionStorage.removeItem('nagartrace-demo-auth')
-      setSession(null)
-      return
-    }
     await supabase.auth.signOut()
   }
 
@@ -112,7 +79,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export const useAuth = () => useContext(Ctx)
 
 export async function accessToken(): Promise<string | null> {
-  if (DEMO) return 'demo-token'
   const { data } = await supabase.auth.getSession()
   return data.session?.access_token ?? null
 }

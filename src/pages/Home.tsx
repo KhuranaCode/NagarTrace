@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import Counters from '../components/Counters'
-import RtiIntake from '../components/RtiIntake'
-import { DEMO } from '../config'
 import type { PublicIssue } from '../types'
 import { Deadline, Empty, ErrorBox, HazardTag, IndiaMap, Spinner, StatusPill, SyntheticBadge } from '../ui'
 import { IssueCard } from './shared'
@@ -208,10 +206,8 @@ export default function Home() {
       <section className="section reveal" style={{ background: 'var(--paper)', paddingTop: 0 }}>
         <div className="container">
           <span className="mono-label">Public status · no login</span>
-          <h2>{DEMO ? 'Simulated reports across India' : 'Live across India'}</h2>
-          <p className="sub">{DEMO
-            ? 'Demo data only - every point here is a synthetic sample report, not a genuine complaint. Locations are approximate and photos are never stored.'
-            : "Every genuine report, live on one map of India. Schematic overview - public locations are rounded to about 11 m, and the exact spot lives on each issue's own map. Photos are never shown publicly."}</p>
+          <h2>Live across India</h2>
+          <p className="sub">Every genuine report, live on one map of India. Schematic overview - public locations are rounded to about 11 m, and the exact spot lives on each issue's own map. Photos are never shown publicly.</p>
           {err ? <ErrorBox error={err} onRetry={load} /> : null}
           {!issues && !err ? <Spinner label="Loading live issues. The free server sleeps when idle - first load can take a minute." /> : null}
           {issues ? (
@@ -252,16 +248,6 @@ export default function Home() {
           <div className="cta-band">
             <h2>See a pothole on your way home?</h2>
             <Link to="/report" className="btn dark">Report a hazard →</Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="container">
-          <div className="card pad-lg">
-            <h2 style={{ marginTop: 0 }}>Ask the authority for its records</h2>
-            <p className="muted">Start an editable RTI draft from your report. NagarTrace prepares the draft only - you verify the authority, add your details and file it yourself. Nothing is filed or sent here.</p>
-            <RtiIntake />
           </div>
         </div>
       </section>
