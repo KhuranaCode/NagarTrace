@@ -154,6 +154,56 @@ function ReasonForm({ label, placeholder, min = 10, onSubmit, submitLabel, dange
   )
 }
 
+/** Follow-up plan: the product's day 7/10/15/30 reminder + escalation ladder,
+ *  shown with its TRUE state. Nothing here claims anything was sent. */
+function FollowUpCard({ d }: { d: Detail }) {
+  const open = d.status !== 'fixed' && d.status !== 'rejected'
+  const submittedAt = new Date(d.created_at)
+  const daysSince = Math.max(0, (+Date.now() - +submittedAt) / 86400000)
+  const escalations = d.events.filter((e) => e.kind === 'escalation')
+  const stages = [
+    { day: 7, what: 'First reminder to the responsible party' },
+    { day: 10, what: 'Second reminder' },
+    { day: 15, what: 'Third reminder' },
+    { day: 30, what: 'Escalation to the next level up' },
+  ]
+  return (
+    <div className="card" style={{ marginTop: 16 }}>
+      <h3 style={{ marginTop: 0 }}>Follow-up plan</h3>
+      {!open ? (
+        <p className="muted">This issue is {d.status === 'fixed' ? 'fixed' : 'closed'} - no follow-ups are scheduled.</p>
+      ) : (
+        <>
+          <p className="muted">
+            Our target is to chase open issues at days 7, 10, 15 and 30 after submission, then escalate. These are
+            NagarTrace's own service targets, not legal deadlines for any authority.
+          </p>
+          <ul className="timeline">
+            {stages.map((st) => {
+              const due = daysSince >= st.day
+              return (
+                <li key={st.day}>
+                  <strong>Day {st.day} - {st.what}:</strong>{' '}
+                  {due ? (
+                    <span>Due now, <strong>not sent</strong>. There is no verified delivery channel for the responsible party yet - nothing has been emailed or dispatched. Any real message needs a verified recipient and your explicit approval first.</span>
+                  ) : (
+                    <span>Not due yet ({Math.ceil(st.day - daysSince)} day(s) to go, counted from submission on {fmtDate(d.created_at)}).</span>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+          {escalations.length > 0 ? (
+            <p className="muted">Escalation level recorded {escalations.length} time(s) by an officer (latest {fmtDate(escalations.reduce((a, b) => (+new Date(b.created_at) > +new Date(a.created_at) ? b : a)).created_at)}). A recorded level is internal status only - it is not a sent notice.</p>
+          ) : (
+            <p className="muted">No escalation recorded yet.</p>
+          )}
+        </>
+      )}
+    </div>
+  )
+}
+
 export default function IssueDetail() {
   const { id } = useParams<{ id: string }>()
   const { session, ready } = useAuth()
@@ -307,6 +357,8 @@ export default function IssueDetail() {
           ))}
         </ul>
       </div>
+
+      <FollowUpCard d={d} />
 
       {actMsg ? <div className="notice-box">{actMsg}</div> : null}
 
