@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import Counters from '../components/Counters'
+import { DEMO } from '../config'
 import type { PublicIssue } from '../types'
 import { Deadline, Empty, ErrorBox, HazardTag, IndiaMap, Spinner, StatusPill, SyntheticBadge } from '../ui'
 import { IssueCard } from './shared'
@@ -206,8 +207,10 @@ export default function Home() {
       <section className="section reveal" style={{ background: 'var(--paper)', paddingTop: 0 }}>
         <div className="container">
           <span className="mono-label">Public status · no login</span>
-          <h2>Live across India</h2>
-          <p className="sub">Every genuine report, live on one map of India. Schematic overview - public locations are rounded to about 11 m, and the exact spot lives on each issue's own map. Photos are never shown publicly.</p>
+          <h2>{DEMO ? 'Simulated reports across India' : 'Live across India'}</h2>
+          <p className="sub">{DEMO
+            ? 'Demo data only - every point here is a synthetic sample report, not a genuine complaint. Locations are approximate and photos are never stored.'
+            : "Every genuine report, live on one map of India. Schematic overview - public locations are rounded to about 11 m, and the exact spot lives on each issue's own map. Photos are never shown publicly."}</p>
           {err ? <ErrorBox error={err} onRetry={load} /> : null}
           {!issues && !err ? <Spinner label="Loading live issues. The free server sleeps when idle - first load can take a minute." /> : null}
           {issues ? (

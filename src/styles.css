@@ -530,3 +530,11 @@ a { color: var(--blue); }
 .hazard-pick.sel.extra { border-color: #8a7bd8; background: #efecfb; }
 .hazard-pick .primary-chip { margin-left: 6px; font-size: .62rem; text-transform: uppercase; letter-spacing: .06em; background: var(--accent); color: #fff; border-radius: 999px; padding: 1px 7px; vertical-align: middle; }
 .hazard-tag.extra { opacity: .82; font-size: .8em; }
+
+/* Small simulated-data label next to the logo (VITE_DEMO builds only) */
+.demo-pill { font-family: var(--mono); font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #7a4a00; background: #fff1d6; border: 1px solid #ecd9ae; border-radius: 999px; padding: 3px 9px; white-space: nowrap; }
+
+/* Demo topbar on small screens: keep the simulated-data label, drop the wordmark (logo stays) */
+@media (max-width: 720px) {
+  .topbar-pill:has(.demo-pill) .brand span { display: none; }
+}

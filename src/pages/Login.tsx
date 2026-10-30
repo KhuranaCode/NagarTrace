@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth'
+import { DEMO } from '../config'
 import { EMAIL_OTP_ENABLED, GOOGLE_AUTH_ENABLED } from '../config'
 
 function retrySeconds(err: string): number | null {
@@ -193,8 +194,9 @@ export default function Login() {
       ) : mode === 'otp' ? (
       <form onSubmit={submit} className="card pad-lg">
         <div className="field">
-          <label htmlFor="email">Email</label>
-          <input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={otpStage === 'code'} />
+          <label htmlFor="email">{DEMO ? 'ID' : 'Email'}</label>
+          <input id="email" type={DEMO ? 'text' : 'email'} required autoComplete={DEMO ? 'username' : 'email'} value={email} onChange={(e) => setEmail(e.target.value)} disabled={otpStage === 'code'} />
+          {DEMO ? <p className="sub" style={{ marginTop: 6, fontSize: 12 }}>Demo build: sign in with ID <b>demo</b> and password <b>demo</b>. This is a mock account with simulated data only - do not enter a real password.</p> : null}
         </div>
         {otpStage === 'code' ? (
           <div className="field">
@@ -218,12 +220,13 @@ export default function Login() {
       ) : (
       <form onSubmit={submit} className="card pad-lg">
         <div className="field">
-          <label htmlFor="email">Email</label>
-          <input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <label htmlFor="email">{DEMO ? 'ID' : 'Email'}</label>
+          <input id="email" type={DEMO ? 'text' : 'email'} required autoComplete={DEMO ? 'username' : 'email'} value={email} onChange={(e) => setEmail(e.target.value)} />
+          {DEMO ? <p className="sub" style={{ marginTop: 6, fontSize: 12 }}>Demo build: sign in with ID <b>demo</b> and password <b>demo</b>. This is a mock account with simulated data only - do not enter a real password.</p> : null}
         </div>
         <div className="field">
           <label htmlFor="pw">Password</label>
-          <input id="pw" type="password" required minLength={6} autoComplete={mode === 'in' ? 'current-password' : 'new-password'} value={password} onChange={(e) => setPassword(e.target.value)} />
+          <input id="pw" type="password" required minLength={DEMO ? undefined : 6} autoComplete={mode === 'in' ? 'current-password' : 'new-password'} value={password} onChange={(e) => setPassword(e.target.value)} />
           {mode === 'up' ? <div className="hint">At least 6 characters.</div> : null}
         </div>
         {error ? <div className="error-box"><p>{error}</p></div> : null}
