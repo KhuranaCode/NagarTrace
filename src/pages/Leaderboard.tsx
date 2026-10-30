@@ -122,11 +122,12 @@ export default function Leaderboard() {
             : 'Nobody on the board yet. Points come from verified, useful reports.'}
         </Empty>
       ) : null}
-      {me && rows && !rows.some((r) => r.alias === me.alias) ? (
+      {me && rows && !rows.some((r) => r.alias === me.alias && r.points === me.points) ? (
         <div className="notice-box" style={{ marginTop: 14 }}>
           You are not on the board yet{me.alias ? `, ${me.alias}` : ''}. The board ranks points, and points
           arrive only when activity is verified - a verified report, being first on a hazard, or confirming
-          a fix. Signing in alone does not add points, and your real name is never shown.
+          a fix. Signing in alone does not add points. Your Google name is not published automatically -
+          the board uses your public alias, which you can change on your desk.
         </div>
       ) : null}
 
