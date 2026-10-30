@@ -297,7 +297,7 @@ export default function IssueDetail() {
       <div className="card pad-lg">
         <div className="issue-top">
           <h1 style={{ margin: 0, fontSize: '1.9rem' }}><HazardTag hazard={d.hazard} /></h1>
-          {d.complaint_id ? <div className="muted" style={{ marginTop: 4 }}>Complaint {d.complaint_id}</div> : null}
+          {d.complaint_id ? <div className="muted" style={{ marginTop: 4, whiteSpace: 'nowrap' }}>Complaint {d.complaint_id}</div> : null}
           <StatusPill status={d.status} />
         </div>
         <p className="muted">{STATUS_META[d.status].hint}</p>
