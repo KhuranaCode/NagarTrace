@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../api'
 import type { PublicIssue } from '../types'
-import { Deadline, ErrorBox, fmtDate, HazardTag, MapView, Spinner, STATUS_META, StatusPill, SyntheticBadge, timeAgo } from '../ui'
+import { Deadline, ErrorBox, fmtDate, HazardTag, MapView, OfficialRecordsBlock, Spinner, STATUS_META, StatusPill, SyntheticBadge, timeAgo } from '../ui'
 
 export default function PublicIssueDetail() {
   const { id } = useParams<{ id: string }>()
@@ -49,6 +49,7 @@ export default function PublicIssueDetail() {
           <span>Updated {fmtDate(issue.updated_at)}</span>
         </div>
       </div>
+      {issue.official_records ? <OfficialRecordsBlock rec={issue.official_records} /> : null}
       <div style={{ marginTop: 16 }}>
         <MapView height={300} pins={[{ id: issue.id, lat: issue.location.lat, lon: issue.location.lon, status: issue.status, label: issue.hazard }]} />
         <p className="small-note">Public locations are rounded to about 11 m. Photos are private to participants and are never shown publicly.</p>

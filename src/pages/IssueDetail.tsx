@@ -6,7 +6,7 @@ import { assessCorroboration, averageHash, formatCorroborationVerdict, type Corr
 import type { EvidenceMeta } from '../types'
 import { useAuth } from '../auth'
 import type { IssueDetail as Detail, Me } from '../types'
-import { Deadline, ErrorBox, fmtDate, HazardTag, MapView, Spinner, STATUS_META, StatusPill, SyntheticBadge } from '../ui'
+import { Deadline, ErrorBox, fmtDate, HazardTag, MapView, OfficialRecordsBlock, Spinner, STATUS_META, StatusPill, SyntheticBadge } from '../ui'
 import Reminders from '../components/Reminders'
 
 const EVENT_LABELS: Record<string, string> = {
@@ -323,6 +323,8 @@ export default function IssueDetail() {
           {d.fixed_at ? <span>Fixed {fmtDate(d.fixed_at)}</span> : null}
         </div>
       </div>
+
+      {d.official_records ? <OfficialRecordsBlock rec={d.official_records} /> : null}
 
       <div className="grid cols-2" style={{ marginTop: 16 }}>
         <div className="card">

@@ -1,6 +1,6 @@
 import { API_BASE } from './config'
 import { accessToken } from './auth'
-import type { Badges, Issue, IssueDetail, LeaderRow, Me, PublicIssue, ReportResult, Scorecard } from './types'
+import type { Badges, Issue, IssueDetail, LeaderRow, Me, NhaiAwardsBrowse, PublicIssue, ReportResult, Scorecard } from './types'
 
 export class ApiError extends Error {
   status: number
@@ -72,6 +72,20 @@ export const api = {
     return req<{ issues: PublicIssue[] }>(`/v1/public/issues${s ? `?${s}` : ''}`, { auth: false })
   },
   publicIssue: (id: string) => req<PublicIssue>(`/v1/public/issues/${id}`, { auth: false }),
+
+  /** Official NHAI FY2024-25 award catalog browse. null when the deployed API predates the route. */
+  nhaiAwards: async (f: { state?: string; nh?: string } = {}): Promise<NhaiAwardsBrowse | null> => {
+    const q = new URLSearchParams()
+    if (f.state) q.set('state', f.state)
+    if (f.nh) q.set('nh', f.nh)
+    q.set('limit', '352')
+    try {
+      return await req<NhaiAwardsBrowse>(`/v1/public/gov-records/nhai-awards?${q}`, { auth: false })
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 404) return null
+      throw e
+    }
+  },
 
   myIssues: (f: { status?: string; responsible?: string } = {}) => {
     const q = new URLSearchParams()

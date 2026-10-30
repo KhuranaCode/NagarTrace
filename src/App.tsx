@@ -10,6 +10,7 @@ import Login from './pages/Login'
 import PublicIssueDetail from './pages/PublicIssueDetail'
 import Privacy from './pages/Privacy'
 import PublicIssues from './pages/PublicIssues'
+import Records from './pages/Records'
 import Report from './pages/Report'
 import Settings from './pages/Settings'
 import Updates from './pages/Updates'
@@ -62,6 +63,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/issues" element={<PublicIssues />} />
         <Route path="/issues/:id" element={<PublicIssueDetail />} />
+        <Route path="/records" element={<Records />} />
         <Route path="/login" element={<Login />} />
         <Route path="/report" element={<Report />} />
         <Route path="/app" element={<Dashboard />} />

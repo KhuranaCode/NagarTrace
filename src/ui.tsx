@@ -1,7 +1,7 @@
 import L from 'leaflet'
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import type { Hazard, Status } from './types'
+import type { OfficialRecords, Hazard, Status } from './types'
 import { useAuth } from './auth'
 
 export const HAZARD_META: Record<Hazard, { label: string; icon: string }> = {
@@ -138,6 +138,7 @@ export function TopBar({ points }: { points?: number | null }) {
   const links = (
     <>
       <NavLink to="/issues" end>Live issues</NavLink>
+      <NavLink to="/records">Govt records</NavLink>
       {session ? <NavLink to="/app">My desk</NavLink> : null}
       {session ? <NavLink to="/leaderboard">Leaderboard</NavLink> : null}
       {!session ? <NavLink to="/login">Sign in</NavLink> : null}
@@ -171,6 +172,7 @@ export function TopBar({ points }: { points?: number | null }) {
           <nav className="menu-links" onClick={(e) => e.stopPropagation()}>
             <NavLink to="/">Home</NavLink>
             <NavLink to="/issues" end>Live issues</NavLink>
+      <NavLink to="/records">Govt records</NavLink>
             <NavLink to="/report">Report a hazard</NavLink>
             {session ? <NavLink to="/app">My desk</NavLink> : <NavLink to="/login">Sign in</NavLink>}
             {session ? <NavLink to="/leaderboard">Leaderboard</NavLink> : null}
@@ -282,5 +284,51 @@ export function IndiaMap({ pins, height = 420, onSelect }: { pins: MapPin[]; hei
         })}
       </svg>
     </div>
+  )
+}
+
+/** Official government-record linkage for an issue. Renders the API's candidate warning
+ *  BESIDE the award candidates (never buried in metadata): these are possible historical
+ *  FY2024-25 NHAI awards on the highway, NOT the report's verified or current contractor. */
+export function OfficialRecordsBlock({ rec }: { rec: OfficialRecords }) {
+  return (
+    <section className="card pad" style={{ marginTop: 16 }} aria-label="Official road records">
+      <h3 style={{ marginTop: 0 }}>Official road records</h3>
+      {rec.road ? (
+        <p style={{ marginBottom: 8 }}>
+          Nearest road in our records: <strong>{rec.road.name ?? rec.road.ref ?? 'Unnamed road'}</strong>
+          {rec.road.name && rec.road.ref ? ` (${rec.road.ref})` : ''}, about {rec.road.distance_m} m away.
+          Source: {rec.road.source_label} ({rec.road.attribution}). Maintainer: <strong>unknown</strong>
+          {rec.road.jurisdiction_status === 'unresolved' ? ' - jurisdiction not resolved yet' : ''}.
+        </p>
+      ) : null}
+      <p style={{ marginBottom: 8 }}>Responsible contractor for this report: <strong>unknown</strong>.</p>
+      {rec.candidate_awards.length > 0 ? (
+        <>
+          <p role="note" style={{ background: '#fff7e0', border: '1px solid #e0b400', borderRadius: 8, padding: '10px 12px', fontWeight: 600 }}>
+            {rec.candidate_warning}
+          </p>
+          <ul style={{ margin: '8px 0', paddingLeft: 20 }}>
+            {rec.candidate_awards.map((a) => (
+              <li key={a.sr} style={{ marginBottom: 10 }}>
+                <strong>{a.project_name}</strong>
+                <br />
+                <span className="muted">
+                  Contractor on record: {a.contractor_name ?? 'not stated in source'}
+                  {a.awarded_cost_cr != null ? ` · awarded cost Rs ${a.awarded_cost_cr} cr (verbatim from source)` : ''}
+                  {a.loa_date ? ` · LOA ${a.loa_date.slice(0, 10)}` : ''}
+                  {a.state ? ` · ${a.state}` : ''}
+                  {a.nh_from_name?.length ? ` · ${a.nh_from_name.map((t) => 'NH-' + t).join(' / ')}` : ''}
+                  {a.chainage_km_marks?.length ? ` · km ${a.chainage_km_marks.join(', ')}` : ''}
+                  {' · '}
+                  <a href={a.source_url} target="_blank" rel="noreferrer">source ({a.source_label}{a.page ? `, p.${a.page}` : ''})</a>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+      <p className="small-note">{rec.coverage_note}</p>
+    </section>
   )
 }
