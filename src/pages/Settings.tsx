@@ -85,6 +85,19 @@ export default function Settings() {
         <p className="hint" style={{ marginTop: 12 }}>Points arrive only when activity is verified - signing in alone adds none.</p>
       </div>
 
+      <div className="card pad-lg" style={{ marginBottom: 18 }}>
+        <h2 style={{ marginTop: 0 }}>Emails &amp; reminders</h2>
+        <p className="muted" style={{ marginBottom: 10 }}>
+          NagarTrace sends no email today - no provider is connected, and nothing has ever been sent to you or to any authority.
+        </p>
+        <p className="muted" style={{ marginBottom: 10 }}>
+          When report reminders launch, they will be opt-in from this page first. Messages to an authority about one of your reports
+          additionally need a verified recipient and your approval of that exact message, every time. Signing up never grants access
+          to your Gmail or any other mailbox - that would be a separate consent you can refuse.
+        </p>
+        <p className="hint" style={{ margin: 0 }}>Status: email not available yet. There is nothing to turn on or off.</p>
+      </div>
+
       <div className="card pad-lg">
         <h2 style={{ marginTop: 0 }}>Session</h2>
         <button className="btn" onClick={async () => { await signOut(); nav('/') }}>Sign out</button>
