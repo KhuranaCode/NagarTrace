@@ -264,6 +264,7 @@ export default function Home() {
           </div>
           <div className="footer-word">NAGAR<span>TRACE</span></div>
           <div className="footer-base">
+            <span>India map outline: <a href="https://github.com/datameet/maps" target="_blank" rel="noreferrer">DataMeet community</a> (CC BY 4.0)</span>
             <span>© 2026 NagarTrace · Team Grexars</span>
             <span>Working prototype · Not a government service</span>
             <span>Made in India</span>
