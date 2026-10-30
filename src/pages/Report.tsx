@@ -4,7 +4,7 @@ import { api, ApiError } from '../api'
 import { useAuth } from '../auth'
 import type { Hazard, ReportResult } from '../types'
 import { ErrorBox, HAZARD_META, HazardIcon } from '../ui'
-import { assessEvidence, formatVerdict, parsePhotoMetadata, stripJpegMetadata, type MetadataAssessment } from '../evidence/photo-metadata'
+import { assessEvidence, formatVerdict, parsePhotoMetadata, type MetadataAssessment } from '../evidence/photo-metadata'
 
 type Gps = { lat: number; lon: number; accuracy_m: number; captured_at: string }
 
@@ -25,7 +25,6 @@ export default function Report() {
   const [result, setResult] = useState<ReportResult | null>(null)
   const [photoState, setPhotoState] = useState<'idle' | 'uploading' | 'done' | 'failed'>('idle')
   const [photoAssess, setPhotoAssess] = useState<MetadataAssessment | null>(null)
-  const [stripMeta, setStripMeta] = useState(false)
   const [photoMsg, setPhotoMsg] = useState<string | null>(null)
   const idemKey = useRef<string>(crypto.randomUUID())
 
@@ -79,6 +78,7 @@ export default function Report() {
   const staleCapture = gps ? Date.now() - new Date(gps.captured_at).getTime() > 13 * 60 * 1000 : false
 
   const submit = async () => {
+    if (!photo) { setStep(0); return }
     if (!gps || !hazard) return
     setBusy(true)
     setErr(null)
@@ -100,17 +100,13 @@ export default function Report() {
       if (photo) {
         setPhotoState('uploading')
         try {
-          let blob: Blob = photo
-        if (stripMeta) {
-          const stripped = await stripJpegMetadata(photo)
-          if (stripped) blob = stripped
-        }
+          const blob: Blob = photo
         const up = await api.uploadEvidence(r.issue.id, 'report', gps.lat, gps.lon, blob, blob.type || 'image/jpeg')
           setPhotoState('done')
           setPhotoMsg(up.location_ok ? 'Photo added to the issue.' : 'Photo added, but it looks far from the report location and may not count as evidence.')
         } catch (e) {
           setPhotoState('failed')
-          setPhotoMsg(e instanceof Error ? e.message : 'Photo upload failed - you can add it from the issue page.')
+          setPhotoMsg(e instanceof Error ? e.message : 'Photo upload failed.')
         }
       }
     } catch (e) {
@@ -133,7 +129,7 @@ export default function Report() {
           )}
           {photoState === 'uploading' ? <p className="muted">Uploading your photo…</p> : null}
           {photoState === 'done' ? <div className="ok-box">{photoMsg}</div> : null}
-          {photoState === 'failed' ? <div className="warn-box">{photoMsg}</div> : null}
+          {photoState === 'failed' ? <div className="warn-box">{photoMsg} A photo is required for this report - add it from the issue page to complete it.</div> : null}
           <div className="action-row" style={{ marginTop: 18 }}>
             <Link to={`/app/issues/${result.issue.id}`} className="btn primary">Track this issue</Link>
             <button className="btn ghost" onClick={() => { setResult(null); setStep(0); setGps(null); pickPhoto(null); setHazard(null); setNote(''); setDanger(false); setPhotoState('idle') }}>Report another</button>
@@ -155,14 +151,14 @@ export default function Report() {
         <div className="card pad-lg">
           <h2 style={{ marginTop: 0 }}>Where is it?</h2>
           <div className="field">
-            <label>Photo (optional at this step)</label>
+            <label>Photo (required)</label>
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp"
               capture="environment"
               onChange={(e) => pickPhoto(e.target.files?.[0] ?? null)}
             />
-            <div className="hint">Taken on the spot helps officers verify. Never shown publicly. You can also add it after submitting.</div>
+            <div className="hint">A photo is required - officers verify from it. Taken on the spot works best. Never shown publicly; the server removes hidden metadata on upload.</div>
             {photoUrl ? <img src={photoUrl} className="photo-preview" alt="Selected hazard" /> : null}
             {photoAssess ? (
               <details className="photo-details">
@@ -174,12 +170,6 @@ export default function Report() {
                 </ul>
                 <p className="small-note">Read on your device only - the photo is not sent anywhere for this check. Metadata can be missing after forwarding (unknown, not suspicious) and can be forged when present.</p>
               </details>
-            ) : null}
-            {photo ? (
-              <label className="checkrow" style={{ marginTop: 8 }}>
-                <input type="checkbox" checked={stripMeta} onChange={(e) => setStripMeta(e.target.checked)} />
-                Remove hidden metadata (camera details, any embedded location) before upload
-              </label>
             ) : null}
           </div>
           <div className="field">
@@ -196,7 +186,7 @@ export default function Report() {
           </div>
           <div className="action-row">
             <button className="btn dark" onClick={captureGps} disabled={gpsBusy}>{gpsBusy ? 'Getting GPS…' : gps ? 'Refresh GPS' : 'Capture GPS'}</button>
-            <button className="btn primary" disabled={!gps || gps.accuracy_m > 100} onClick={() => setStep(1)}>Next: what is it?</button>
+            <button className="btn primary" disabled={!gps || gps.accuracy_m > 100 || !photo} onClick={() => setStep(1)}>Next: what is it?</button>
           </div>
         </div>
       ) : null}
@@ -235,7 +225,7 @@ export default function Report() {
             <tbody>
               <tr><th>Hazard</th><td>{hazard ? HAZARD_META[hazard].label : '-'}{danger ? ' (marked dangerous)' : ''}</td></tr>
               <tr><th>Location</th><td>{gps ? `${gps.lat.toFixed(5)}, ${gps.lon.toFixed(5)} (±${gps.accuracy_m} m)` : '-'}</td></tr>
-              <tr><th>Photo</th><td>{photo ? 'Attached (uploaded after submit)' : 'None'}</td></tr>
+              <tr><th>Photo</th><td>Attached (uploaded with the report)</td></tr>
               {note.trim() ? <tr><th>Note</th><td>{note.trim()}</td></tr> : null}
             </tbody>
           </table>
