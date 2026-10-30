@@ -3,9 +3,11 @@
 Branded HTML templates for the consented-mail roadmap. Palette and voice match
 the site (--paper #f4f3ee, --navy #0e1b2c, --accent #ff6b1a, Inter/system stack).
 
-**Sending status: no email has ever been sent by NagarTrace.** The live product
-has no SMTP provider (Supabase default mailer is dev-only), no verified
-recipients for authorities, and no per-user consent records for mail access.
+**Sending status: no complaint or reminder email has ever been sent by
+NagarTrace.** (Sign-in verification emails via Supabase's default mailer are
+separate and do send.) There is no custom SMTP provider for product mail, no
+verified recipients for authorities, and no per-user consent records for mail
+access.
 Every template below is inert text until ALL of these exist for a given send:
 
 1. A verified recipient address (for complaints/reminders: the actual
