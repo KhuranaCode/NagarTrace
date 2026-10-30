@@ -133,6 +133,7 @@ a { color: var(--blue); }
   color: var(--ink);
 }
 .hero-grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 44px; align-items: start; }
+.hero-grid > * { min-width: 0; }
 .hero-eyebrow {
   display: inline-block; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.16em;
   font-size: 0.72rem; font-weight: 600; color: var(--ink-soft);
@@ -175,7 +176,7 @@ a { color: var(--blue); }
   padding: 14px 2px; transition: background 0.12s ease;
 }
 .record-row:hover { background: #faf9f5; }
-.record-row-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 6px; }
+.record-row-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 6px; }
 .record-all { display: inline-block; margin-top: 12px; font-weight: 700; color: var(--accent-deep); text-decoration: none; }
 .record-all:hover { text-decoration: underline; }
 
