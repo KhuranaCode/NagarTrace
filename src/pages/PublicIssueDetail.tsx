@@ -25,6 +25,7 @@ export default function PublicIssueDetail() {
       <div className="card pad-lg">
         <div className="issue-top">
           <h1 style={{ margin: 0, fontSize: '1.8rem' }}><HazardTag hazard={issue.hazard} /></h1>
+          {issue.complaint_id ? <div className="muted" style={{ marginTop: 4 }}>Complaint {issue.complaint_id}</div> : null}
           <span className="vis-pill public">Public record - no names, no photos</span>
           <StatusPill status={issue.status} />
         </div>

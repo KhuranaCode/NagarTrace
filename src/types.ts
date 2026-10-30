@@ -3,6 +3,9 @@ export type Status = 'reported' | 'verified' | 'assigned' | 'in_progress' | 'awa
 
 export interface PublicIssue {
   id: string
+  /** Human-readable complaint reference (e.g. NT-000123). Absent until the API serves it. */
+  complaint_no?: number | null
+  complaint_id?: string | null
   hazard: Hazard
   status: Status
   severity: number

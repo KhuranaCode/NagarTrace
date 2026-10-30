@@ -26,6 +26,11 @@ export default function Report() {
   const [photoState, setPhotoState] = useState<'idle' | 'uploading' | 'done' | 'failed'>('idle')
   const [photoAssess, setPhotoAssess] = useState<MetadataAssessment | null>(null)
   const [photoMsg, setPhotoMsg] = useState<string | null>(null)
+  const [photoPickedAt, setPhotoPickedAt] = useState<number | null>(null)
+  const [bindErr, setBindErr] = useState<string | null>(null)
+  const [moved, setMoved] = useState(false)
+  const [, setTick] = useState(0) // countdown re-render
+  const watchId = useRef<number | null>(null)
   const idemKey = useRef<string>(crypto.randomUUID())
   const pointsBaseline = useRef<number | null>(null)
   const [pointsAwarded, setPointsAwarded] = useState<number | null>(null)
@@ -49,17 +54,53 @@ export default function Report() {
     )
   }
 
+  // GPS-FIRST 15-SECOND CAPTURE BINDING (user-requested): the photo must be taken within 15 s
+  // of a fresh GPS fix, and moving away before the photo invalidates the fix. Honest scope:
+  // this REDUCES photo/location mismatch - a browser timer cannot prove where a photo was
+  // taken, and gallery picks inside the window are indistinguishable from camera shots.
+  const BIND_WINDOW_MS = 15_000
+  const MOVE_INVALIDATE_M = 60
+  const distM = (a: { lat: number; lon: number }, b: { lat: number; lon: number }) => {
+    const R = 6371000, dLa = (b.lat - a.lat) * Math.PI / 180, dLo = (b.lon - a.lon) * Math.PI / 180
+    const h = Math.sin(dLa / 2) ** 2 + Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * Math.sin(dLo / 2) ** 2
+    return 2 * R * Math.asin(Math.sqrt(h))
+  }
+  const fixAge = () => (gps ? Date.now() - new Date(gps.captured_at).getTime() : Number.POSITIVE_INFINITY)
+  const windowLive = !!gps && !moved && fixAge() <= BIND_WINDOW_MS
+  const bound = !!photo && !!photoPickedAt && !!gps && !moved && photoPickedAt - new Date(gps.captured_at).getTime() <= BIND_WINDOW_MS
+
+  // countdown re-render while the window is open; stop the movement watch on unmount
+  useEffect(() => {
+    if (!gps || photo) return
+    const t = setInterval(() => setTick((x) => x + 1), 500)
+    return () => clearInterval(t)
+  }, [gps, photo])
+  useEffect(() => () => { if (watchId.current !== null) navigator.geolocation.clearWatch(watchId.current) }, [])
+
   const captureGps = () => {
     setGpsBusy(true)
     setGpsErr(null)
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setGps({
+        const fix = {
           lat: pos.coords.latitude,
           lon: pos.coords.longitude,
           accuracy_m: Math.round(pos.coords.accuracy ?? 9999),
           captured_at: new Date().toISOString(),
-        })
+        }
+        setGps(fix)
+        setMoved(false)
+        setBindErr(null)
+        setPhotoPickedAt(null)
+        pickPhoto(null) // a fresh fix starts a fresh window: any earlier photo is unbound
+        // Movement before the photo invalidates the fix - it was taken somewhere else.
+        if (watchId.current !== null) navigator.geolocation.clearWatch(watchId.current)
+        watchId.current = navigator.geolocation.watchPosition((p2) => {
+          if (distM(fix, { lat: p2.coords.latitude, lon: p2.coords.longitude }) > MOVE_INVALIDATE_M) {
+            setMoved(true)
+            if (watchId.current !== null) navigator.geolocation.clearWatch(watchId.current)
+          }
+        }, () => undefined, { enableHighAccuracy: true, maximumAge: 0 })
         setGpsBusy(false)
       },
       (e) => {
@@ -73,6 +114,15 @@ export default function Report() {
   const pickPhoto = (f: File | null) => {
     setPhoto(f)
     setPhotoAssess(null)
+    if (f) {
+      setPhotoPickedAt(Date.now())
+      if (!gps) setBindErr('Get a GPS fix first, then take the photo within 15 seconds.')
+      else if (moved) setBindErr('You moved away from the GPS fix before the photo. Capture GPS again at the hazard, then take the photo within 15 seconds.')
+      else if (fixAge() > BIND_WINDOW_MS) setBindErr('The 15-second window ran out after the GPS fix. Capture GPS again, then take the photo.')
+      else setBindErr(null)
+    } else {
+      setPhotoPickedAt(null)
+    }
     if (photoUrl) URL.revokeObjectURL(photoUrl)
     setPhotoUrl(f ? URL.createObjectURL(f) : null)
     if (f) {
@@ -88,6 +138,13 @@ export default function Report() {
   const submit = async () => {
     if (!photo) { setStep(0); return }
     if (!gps || !hazard) return
+    if (!bound) {
+      setStep(0)
+      setBindErr(moved
+        ? 'You moved away from the GPS fix before the photo. Capture GPS again at the hazard, then take the photo within 15 seconds.'
+        : 'The photo is outside the 15-second window after the GPS fix. Capture GPS again, then take the photo.')
+      return
+    }
     setBusy(true)
     setErr(null)
     // The photo and the report are one thing: stage the photo first, then the
@@ -173,14 +230,36 @@ export default function Report() {
         <div className="card pad-lg">
           <h2 style={{ marginTop: 0 }}>Where is it?</h2>
           <div className="field">
-            <label>Photo (required)</label>
+            <label>Location first</label>
+            {gps ? (
+              <div className={gps.accuracy_m > 100 ? 'warn-box' : 'ok-box'} style={{ margin: 0 }}>
+                GPS locked: {gps.lat.toFixed(5)}, {gps.lon.toFixed(5)} (±{gps.accuracy_m} m)
+                {gps.accuracy_m > 100 ? ' - accuracy is too low, move to open sky and retry.' : ''}
+              </div>
+            ) : (
+              <div className="photo-drop">Stand at the hazard and capture GPS. We never store your location beyond this report.</div>
+            )}
+            {gpsErr ? <div className="error-box"><p>{gpsErr}. Allow location access and try again.</p></div> : null}
+            <button className="btn dark" onClick={captureGps} disabled={gpsBusy}>{gpsBusy ? 'Getting GPS…' : gps ? 'Capture GPS again' : 'Capture GPS'}</button>
+            {gps && !photo ? (
+              windowLive ? (
+                <div className="notice-box" style={{ marginTop: 10 }}>Photo window open: <strong>{Math.max(0, Math.ceil((BIND_WINDOW_MS - fixAge()) / 1000))}s</strong> left. Take the photo now, right here.</div>
+              ) : (
+                <div className="warn-box" style={{ marginTop: 10 }}>{moved ? 'You moved away from this fix. Capture GPS again at the hazard.' : 'The 15-second window ran out. Capture GPS again, then take the photo.'}</div>
+              )
+            ) : null}
+          </div>
+          <div className="field">
+            <label>Photo (required, within 15 seconds of the GPS fix)</label>
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp"
               capture="environment"
+              disabled={!gps || moved}
               onChange={(e) => pickPhoto(e.target.files?.[0] ?? null)}
             />
-            <div className="hint">A photo is required - officers verify from it. Taken on the spot works best. Never shown publicly; the server removes hidden metadata on upload.</div>
+            <div className="hint">GPS first, photo right after: this keeps the photo tied to this spot and reduces mismatched reports. It cannot prove where a photo was taken. Never shown publicly; the server removes hidden metadata on upload.</div>
+            {bindErr ? <div className="error-box"><p>{bindErr}</p></div> : null}
             {photoUrl ? <img src={photoUrl} className="photo-preview" alt="Selected hazard" /> : null}
             {photoAssess ? (
               <details className="photo-details">
@@ -194,21 +273,8 @@ export default function Report() {
               </details>
             ) : null}
           </div>
-          <div className="field">
-            <label>Location</label>
-            {gps ? (
-              <div className={gps.accuracy_m > 100 ? 'warn-box' : 'ok-box'} style={{ margin: 0 }}>
-                GPS locked: {gps.lat.toFixed(5)}, {gps.lon.toFixed(5)} (±{gps.accuracy_m} m)
-                {gps.accuracy_m > 100 ? ' - accuracy is too low, move to open sky and retry.' : ''}
-              </div>
-            ) : (
-              <div className="photo-drop">Stand at the hazard and capture GPS. We never store your location beyond this report.</div>
-            )}
-            {gpsErr ? <div className="error-box"><p>{gpsErr}. Allow location access and try again.</p></div> : null}
-          </div>
           <div className="action-row">
-            <button className="btn dark" onClick={captureGps} disabled={gpsBusy}>{gpsBusy ? 'Getting GPS…' : gps ? 'Refresh GPS' : 'Capture GPS'}</button>
-            <button className="btn primary" disabled={!gps || gps.accuracy_m > 100 || !photo} onClick={() => setStep(1)}>Next: what is it?</button>
+            <button className="btn primary" disabled={!bound || (gps?.accuracy_m ?? 9999) > 100} onClick={() => setStep(1)}>Next: what is it?</button>
           </div>
         </div>
       ) : null}

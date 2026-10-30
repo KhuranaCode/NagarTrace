@@ -9,6 +9,7 @@ export function IssueCard({ issue, to }: { issue: PublicIssue; to: string }) {
         <HazardTag hazard={issue.hazard} />
         <StatusPill status={issue.status} />
       </div>
+      {issue.complaint_id ? <div className="issue-meta"><span>Complaint {issue.complaint_id}</span></div> : null}
       <div className="issue-resp">
         {issue.responsible ? (
           <>
