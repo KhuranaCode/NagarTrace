@@ -10,6 +10,8 @@ interface AuthState {
   signIn: (email: string, password: string) => Promise<string | null>
   signUp: (email: string, password: string) => Promise<{ error: string | null; needsConfirmation: boolean }>
   resendConfirmation: (email: string) => Promise<string | null>
+  requestEmailOtp: (email: string) => Promise<string | null>
+  verifyEmailOtp: (email: string, token: string) => Promise<string | null>
   signInWithGoogle: () => Promise<string | null>
   signOut: () => Promise<void>
 }
@@ -42,6 +44,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: null, needsConfirmation: !data.session }
   }
 
+  const requestEmailOtp = async (email: string) => {
+    // Sends a one-time code when the project's email template includes {{ .Token }}.
+    // shouldCreateUser lets a new email sign up and get confirmed by the same code.
+    const { error } = await supabase.auth.signInWithOtp({ email, options: { shouldCreateUser: true } })
+    return error ? error.message : null
+  }
+
+  const verifyEmailOtp = async (email: string, token: string) => {
+    // Successful verification both signs the user in and confirms the email.
+    const { error } = await supabase.auth.verifyOtp({ email, token, type: 'email' })
+    return error ? error.message : null
+  }
+
   const resendConfirmation = async (email: string) => {
     const emailRedirectTo = import.meta.env.DEV ? 'http://localhost:3000/' : 'https://khuranacode.github.io/NagarTrace/'
     const { error } = await supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo } })
@@ -58,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut()
   }
 
-  return <Ctx.Provider value={{ session, ready, signIn, signUp, resendConfirmation, signInWithGoogle, signOut }}>{children}</Ctx.Provider>
+  return <Ctx.Provider value={{ session, ready, signIn, signUp, resendConfirmation, requestEmailOtp, verifyEmailOtp, signInWithGoogle, signOut }}>{children}</Ctx.Provider>
 }
 
 export const useAuth = () => useContext(Ctx)

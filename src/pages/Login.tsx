@@ -23,15 +23,19 @@ function friendly(err: string): string {
     return 'Too many attempts. Please wait a little, then try again.'
   if (e.includes('password'))
     return 'Password needs at least 6 characters.'
+  if (e.includes('token') || e.includes('otp'))
+    return 'That code did not match or has expired. Request a new code and enter it promptly.'
   return err
 }
 
 export default function Login() {
-  const { signIn, signUp, resendConfirmation, signInWithGoogle } = useAuth()
+  const { signIn, signUp, resendConfirmation, requestEmailOtp, verifyEmailOtp, signInWithGoogle } = useAuth()
   const nav = useNavigate()
   const loc = useLocation()
   const from = (loc.state as { from?: string } | null)?.from ?? '/app'
-  const [mode, setMode] = useState<'in' | 'up'>('in')
+  const [mode, setMode] = useState<'in' | 'up' | 'otp'>('otp')
+  const [otpStage, setOtpStage] = useState<'email' | 'code'>('email')
+  const [otpCode, setOtpCode] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
@@ -62,7 +66,22 @@ export default function Login() {
     setBusy(true)
     setError(null)
     setResent(false)
-    if (mode === 'in') {
+    if (mode === 'otp') {
+      if (otpStage === 'email') {
+        const err = await requestEmailOtp(email.trim())
+        setBusy(false)
+        if (err) {
+          setError(friendly(err))
+          const wait = retrySeconds(err)
+          if (wait) startCooldown(wait)
+        } else { setOtpStage('code'); startCooldown(30) }
+      } else {
+        const err = await verifyEmailOtp(email.trim(), otpCode.trim())
+        setBusy(false)
+        if (err) setError(friendly(err))
+        else nav(from, { replace: true })
+      }
+    } else if (mode === 'in') {
       const err = await signIn(email.trim(), password)
       setBusy(false)
       if (err) {
@@ -137,9 +156,13 @@ export default function Login() {
 
   return (
     <div className="container" style={{ maxWidth: 460, paddingTop: 50 }}>
-      <h1 style={{ letterSpacing: '-0.02em' }}>{mode === 'in' ? 'Sign in' : 'Create your account'}</h1>
+      <h1 style={{ letterSpacing: '-0.02em' }}>{mode === 'otp' ? 'Sign in with a code' : mode === 'in' ? 'Sign in' : 'Create your account'}</h1>
       <p className="muted">Report hazards, track repairs and confirm fixes in your ward.</p>
 
+      <div className="auth-tabs" role="tablist" aria-label="Sign-in method">
+        <button role="tab" aria-selected={mode === 'otp'} className={mode === 'otp' ? 'on' : ''} onClick={() => { setMode('otp'); setError(null) }}>Email code</button>
+        <button role="tab" aria-selected={mode !== 'otp'} className={mode !== 'otp' ? 'on' : ''} onClick={() => { setMode('in'); setError(null) }}>Password</button>
+      </div>
       <div className="card pad-lg" style={{ marginBottom: 14 }}>
         {GOOGLE_AUTH_ENABLED ? (
           <button className="btn dark block" onClick={google} disabled={busy}>
@@ -151,14 +174,39 @@ export default function Login() {
               Continue with Google
             </button>
             <p className="small-note" style={{ textAlign: 'center', margin: '10px 0 0' }}>
-              Google sign-in is ready in the app but stays locked until Google's app review is completed by the
-              project owner. Email sign-in below works today.
+              Google sign-in is built but not open to everyone yet - the project owner has not enabled public
+              access with Google. Email sign-in below works today.
             </p>
           </>
         )}
         {GOOGLE_AUTH_ENABLED ? <p className="small-note" style={{ textAlign: 'center', margin: '10px 0 0' }}>or use email below</p> : null}
       </div>
 
+      {mode === 'otp' ? (
+      <form onSubmit={submit} className="card pad-lg">
+        <div className="field">
+          <label htmlFor="email">Email</label>
+          <input id="email" type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled={otpStage === 'code'} />
+        </div>
+        {otpStage === 'code' ? (
+          <div className="field">
+            <label htmlFor="otp">6-digit code</label>
+            <input id="otp" type="text" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} required autoComplete="one-time-code" placeholder="000000" value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ''))} className="otp-input" />
+            <div className="hint">Enter the code we emailed to {email.trim()}. Verifying it signs you in and confirms your email.</div>
+          </div>
+        ) : null}
+        {error ? <div className="error-box"><p>{error}</p></div> : null}
+        <button className="btn primary block" disabled={busy || cooldown > 0 || (otpStage === 'code' && otpCode.trim().length !== 6)}>
+          {busy ? 'Please wait…' : cooldown > 0 ? `Try again in ${cooldown}s` : otpStage === 'email' ? 'Send sign-in code' : 'Verify code and sign in'}
+        </button>
+        {otpStage === 'code' ? (
+          <p style={{ textAlign: 'center', marginBottom: 0 }}>
+            Did not get it?{' '}
+            <a href="#" onClick={(e) => { e.preventDefault(); if (cooldown === 0) { setOtpStage('email'); setOtpCode(''); setError(null) } }}>Send a new code</a>
+          </p>
+        ) : null}
+      </form>
+      ) : (
       <form onSubmit={submit} className="card pad-lg">
         <div className="field">
           <label htmlFor="email">Email</label>
@@ -181,6 +229,7 @@ export default function Login() {
           )}
         </p>
       </form>
+      )}
       <p className="small-note" style={{ marginTop: 14 }}>
         Continue without an account to <Link to="/issues">browse public issue status</Link> - no login needed.
       </p>
