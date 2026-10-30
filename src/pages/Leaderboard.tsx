@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../auth'
-import type { LeaderRow } from '../types'
+import type { LeaderRow, Me } from '../types'
 import { Empty, ErrorBox, Spinner } from '../ui'
 import '../leaderboard.css'
 
@@ -15,6 +15,7 @@ export default function Leaderboard() {
   const [ward, setWard] = useState('')
   const [appliedWard, setAppliedWard] = useState('')
   const [period, setPeriod] = useState<Period>('all')
+  const [me, setMe] = useState<Me | null>(null)
 
   const load = useCallback(() => {
     setErr(null)
@@ -26,7 +27,10 @@ export default function Leaderboard() {
   }, [appliedWard, period])
 
   useEffect(() => {
-    if (session) load()
+    if (session) {
+      load()
+      api.me().then(setMe).catch(() => undefined)
+    }
   }, [session, load])
 
   if (ready && !session) {
@@ -117,6 +121,13 @@ export default function Leaderboard() {
             ? `Nobody on the board for ward ${appliedWard} yet. Points come from verified, useful reports.`
             : 'Nobody on the board yet. Points come from verified, useful reports.'}
         </Empty>
+      ) : null}
+      {me && rows && !rows.some((r) => r.alias === me.alias) ? (
+        <div className="notice-box" style={{ marginTop: 14 }}>
+          You are not on the board yet{me.alias ? `, ${me.alias}` : ''}. The board ranks points, and points
+          arrive only when activity is verified - a verified report, being first on a hazard, or confirming
+          a fix. Signing in alone does not add points, and your real name is never shown.
+        </div>
       ) : null}
 
       {top ? (
