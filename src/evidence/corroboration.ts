@@ -90,15 +90,15 @@ export function assessCorroboration(
   if (firstReport && firstAfter) {
     const gapMin = (+new Date(firstAfter.created_at) - +new Date(firstReport.created_at)) / 60000
     if (gapMin < 0) {
-      signals.push({ id: 'timeline-order', state: 'present', label: 'Upload order', detail: 'A repair photo was uploaded BEFORE the first report photo. That order is impossible for a real repair - review suggested.' })
+      signals.push({ id: 'timeline-order', state: 'present', label: 'Upload chronology', detail: 'A repair photo was uploaded before the first report photo. Upload times are NOT capture times - this can be a delayed upload or historical evidence, so the actual capture order is unknown. Worth a human look for context - review suggested.' })
     } else if (gapMin < 5) {
-      signals.push({ id: 'timeline-order', state: 'present', label: 'Upload order', detail: `The repair photo was uploaded ${Math.max(1, Math.round(gapMin))} minute(s) after the report. Very fast repairs happen (an existing crew), but a same-minute before/after pair deserves a look.` })
+      signals.push({ id: 'timeline-order', state: 'present', label: 'Upload chronology', detail: `The repair photo was uploaded ${Math.max(1, Math.round(gapMin))} minute(s) after the report. Fast turnarounds happen (a crew already on site, photos uploaded together later) - upload times do not show when the photos were taken.` })
     } else {
       const hours = gapMin / 60
-      signals.push({ id: 'timeline-order', state: 'present', label: 'Upload order', detail: `Repair photo came ${hours >= 24 ? `${Math.round(hours / 24)} day(s)` : `${Math.round(hours)} hour(s)`} after the report - a plausible repair timeline.` })
+      signals.push({ id: 'timeline-order', state: 'present', label: 'Upload chronology', detail: `Repair photo was uploaded ${hours >= 24 ? `${Math.round(hours / 24)} day(s)` : `${Math.round(hours)} hour(s)`} after the report. Upload times only - capture times were stripped with EXIF.` })
     }
   } else {
-    signals.push({ id: 'timeline-order', state: 'unknown', label: 'Upload order', detail: 'No report-and-repair pair yet, so there is no timeline to cross-check.' })
+    signals.push({ id: 'timeline-order', state: 'unknown', label: 'Upload chronology', detail: 'No report-and-repair pair yet, so there is no chronology to cross-check.' })
   }
 
   // Location checks: the server verified each photo's claimed spot against the report.
@@ -108,8 +108,8 @@ export function assessCorroboration(
     state: 'present',
     label: 'Location checks',
     detail: mismatched.length === 0
-      ? `All ${evidence.length} photo(s) were uploaded from near the issue location (server-checked).`
-      : `${mismatched.length} of ${evidence.length} photo(s) did NOT match the issue location at upload. Those may not show this issue - review suggested.`,
+      ? `For all ${evidence.length} photo(s), the uploader's reported GPS at upload time was near the issue. That checks the uploader's location claim - it does NOT verify where the photo was actually captured.`
+      : `For ${mismatched.length} of ${evidence.length} photo(s), the uploader's reported GPS at upload time was NOT near the issue. The photo may show a different place, or the uploader's GPS was off - review suggested.`,
   })
 
   // Near-duplicates: pixel-similar photos (reused image). Works post-EXIF-strip.
@@ -128,12 +128,12 @@ export function assessCorroboration(
       state: 'present',
       label: 'Image similarity',
       detail: dups.length > 0
-        ? `Near-identical image pair(s) detected (${dups.join('; ')}). The same photo may have been reused - review suggested.`
-        : 'The photos are visually distinct images. That rules out a reused photo - it does NOT by itself prove each one is genuine.',
+        ? `Very similar pixel patterns in pair(s): ${dups.join('; ')}. That can mean a reused photo, but uniform surfaces (plain road, sky, walls) can also hash alike - needs a human look, not a conclusion. Review suggested.`
+        : 'The photos are visually distinct images. That makes an exact reused photo unlikely - it says nothing about whether each photo genuinely shows this issue.',
     })
   }
 
-  const review = signals.some((s) => s.id !== 'photo-count' && s.state === 'present' && /review suggested/.test(s.detail))
+  const review = signals.some((s) => s.id !== 'photo-count' && s.state === 'present' && /review suggested/i.test(s.detail))
   const informative = signals.filter((s) => s.state === 'present' && s.id !== 'photo-count')
   const verdict: CorroborationVerdict =
     evidence.length < 2 && !firstAfter ? 'insufficient-data'

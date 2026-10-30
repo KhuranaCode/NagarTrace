@@ -114,7 +114,7 @@ function CorroborationPanel({ issueId, evidence }: { issueId: string; evidence: 
           <li key={sig.id} className={`sig-${sig.state}`}><strong>{sig.label}:</strong> {sig.detail}</li>
         ))}
       </ul>
-      <p className="small-note">Cross-checks catch reused photos, impossible timelines and location mismatches. A pass is weak corroboration only - it never proves a photo is genuine.</p>
+      <p className="small-note">Cross-checks compare upload times, the server's upload-time GPS checks and pixel similarity. Upload time is not capture time, and pixel similarity is not identity. A pass is weak corroboration only - it never proves a photo is genuine.</p>
     </details>
   )
 }
