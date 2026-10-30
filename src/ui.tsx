@@ -57,7 +57,7 @@ export function HazardTag({ hazard }: { hazard: Hazard }) {
 }
 
 export function SyntheticBadge() {
-  return <span className="syn-badge" title="Sample record used for the demo">Synthetic data</span>
+  return <span className="syn-badge" title="Sample record - not a real complaint">Synthetic data</span>
 }
 
 export function timeAgo(iso: string): string {

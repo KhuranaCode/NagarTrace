@@ -9,6 +9,8 @@ interface AuthState {
   ready: boolean
   signIn: (email: string, password: string) => Promise<string | null>
   signUp: (email: string, password: string) => Promise<{ error: string | null; needsConfirmation: boolean }>
+  resendConfirmation: (email: string) => Promise<string | null>
+  signInWithGoogle: () => Promise<string | null>
   signOut: () => Promise<void>
 }
 
@@ -40,11 +42,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: null, needsConfirmation: !data.session }
   }
 
+  const resendConfirmation = async (email: string) => {
+    const emailRedirectTo = import.meta.env.DEV ? 'http://localhost:3000/' : 'https://khuranacode.github.io/NagarTrace/'
+    const { error } = await supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo } })
+    return error ? error.message : null
+  }
+
+  const signInWithGoogle = async () => {
+    const redirectTo = import.meta.env.DEV ? 'http://localhost:3000/' : 'https://khuranacode.github.io/NagarTrace/'
+    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } })
+    return error ? error.message : null
+  }
+
   const signOut = async () => {
     await supabase.auth.signOut()
   }
 
-  return <Ctx.Provider value={{ session, ready, signIn, signUp, signOut }}>{children}</Ctx.Provider>
+  return <Ctx.Provider value={{ session, ready, signIn, signUp, resendConfirmation, signInWithGoogle, signOut }}>{children}</Ctx.Provider>
 }
 
 export const useAuth = () => useContext(Ctx)

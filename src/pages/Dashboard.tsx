@@ -65,7 +65,7 @@ export default function Dashboard() {
     )
   }
   if (err) return <div className="container section"><ErrorBox error={err} onRetry={() => void load()} /></div>
-  if (!me || !mine) return <div className="container section"><Spinner label="Loading your desk. The free demo server may take a minute to wake up." /></div>
+  if (!me || !mine) return <div className="container section"><Spinner label="Loading your desk. The free server sleeps when idle - first load can take a minute." /></div>
 
   const isMuni = me.memberships.some((x) => x.kind === 'municipality' && (x.role === 'officer' || x.role === 'admin'))
   const isAdmin = me.memberships.some((x) => x.role === 'admin')
@@ -86,7 +86,7 @@ export default function Dashboard() {
     setEscMsg(null)
     try {
       await api.runEscalations()
-      setEscMsg('Escalation check ran. Any overdue issues were recorded as escalated (nothing is sent to anyone in this demo).')
+      setEscMsg('Escalation check ran. Any overdue issues were recorded as escalated (recorded only - nothing is sent).')
       void load()
     } catch (e) {
       setEscMsg(e instanceof Error ? e.message : 'Failed')
@@ -208,7 +208,7 @@ export default function Dashboard() {
           </div>
           <div className="card">
             <h3 style={{ marginTop: 0 }}>Escalation check</h3>
-            <p className="muted">Records escalation levels for overdue issues. Nothing is emailed or sent - this demo records only.</p>
+            <p className="muted">Records escalation levels for overdue issues. Nothing is emailed or sent - recorded only.</p>
             {escMsg ? <p className="muted">{escMsg}</p> : null}
             <button className="btn dark" onClick={runEsc}>Run escalation check</button>
           </div>

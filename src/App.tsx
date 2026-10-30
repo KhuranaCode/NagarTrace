@@ -27,7 +27,7 @@ export default function App() {
 
   return (
     <div>
-      {warming ? <div className="warm-banner">Waking up the demo server - the free tier sleeps when idle. First request can take about a minute.</div> : null}
+      {warming ? <div className="warm-banner">Waking up the server - the free tier sleeps when idle. First request can take about a minute.</div> : null}
       <TopBar points={null} key={session ? 'in' : 'out'} />
       <Routes>
         <Route path="/" element={<Home />} />

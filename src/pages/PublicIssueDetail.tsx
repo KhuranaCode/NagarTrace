@@ -17,7 +17,7 @@ export default function PublicIssueDetail() {
   useEffect(load, [id])
 
   if (err) return <div className="container section"><ErrorBox error={err} onRetry={load} /></div>
-  if (!issue) return <div className="container section"><Spinner label="Loading issue. The free demo server may take a minute to wake up." /></div>
+  if (!issue) return <div className="container section"><Spinner label="Loading issue. The free server sleeps when idle - first load can take a minute." /></div>
 
   return (
     <div className="container section" style={{ maxWidth: 760 }}>

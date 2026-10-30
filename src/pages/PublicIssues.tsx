@@ -53,8 +53,8 @@ export default function PublicIssues() {
       </div>
 
       {err ? <ErrorBox error={err} onRetry={load} /> : null}
-      {!issues && !err ? <Spinner label="Loading. The free demo server may take a minute to wake up." /> : null}
-      {issues && issues.length === 0 ? <Empty>No issues match these filters.</Empty> : null}
+      {!issues && !err ? <Spinner label="Loading. The free server sleeps when idle - first load can take a minute." /> : null}
+      {issues && issues.length === 0 ? <Empty>No reports to show yet. When a genuine report is filed, it appears here.</Empty> : null}
       {issues && issues.length > 0 ? (
         <>
           <MapView

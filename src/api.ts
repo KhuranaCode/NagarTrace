@@ -27,7 +27,7 @@ async function req<T>(path: string, opts: { method?: string; body?: unknown; hea
       body: opts.body === undefined ? undefined : headers['content-type'] === 'application/json' ? JSON.stringify(opts.body) : (opts.body as BodyInit),
     })
   } catch {
-    throw new ApiError(0, 'network', 'Cannot reach the server. Check your connection or retry - the free demo host may still be waking up.')
+    throw new ApiError(0, 'network', 'Cannot reach the server. Check your connection or retry - the free host may still be waking up.')
   }
   if (!res.ok) {
     let code = 'error'

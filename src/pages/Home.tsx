@@ -43,7 +43,7 @@ export default function Home() {
       <section className="hero">
         <div className="container hero-grid">
           <div>
-            <span className="hero-eyebrow">Civic tech · Synthetic demo</span>
+            <span className="hero-eyebrow">Civic tech · From report to confirmed repair</span>
             <h1>Report the pothole. Reach who must fix it.</h1>
             <div className="dash-strip" aria-hidden="true" />
             <p className="lede lede-full">
@@ -64,7 +64,7 @@ export default function Home() {
               <li>An officer verifies before anyone is assigned</li>
             </ul>
             <div className="demo-strip">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M9 3h6M10 3v6.5L4.8 19a2 2 0 0 0 1.8 3h10.8a2 2 0 0 0 1.8-3L14 9.5V3" /></svg> Demo running on synthetic data. No live municipal integration is claimed.
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M9 3h6M10 3v6.5L4.8 19a2 2 0 0 0 1.8 3h10.8a2 2 0 0 0 1.8-3L14 9.5V3" /></svg> Not connected to any municipal system yet. Complaints stay in this app until a real authority is on board.
             </div>
           </div>
           <div className="record-card">
@@ -100,20 +100,50 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="section" style={{ paddingTop: 26, paddingBottom: 0 }}>
+        <div className="container">
+          <div className="photo-strip reveal">
+            <figure>
+              <img src="/NagarTrace/photos/broken-road-delhi.jpg" alt="A deep open pothole breaking through a city road surface" loading="lazy" />
+              <figcaption>
+                <a href="https://commons.wikimedia.org/wiki/File:Broken_Roads_in_India%27s_Capital_New_Delhi.jpg" target="_blank" rel="noreferrer">Photo: Rrthakur22, CC BY-SA 4.0</a>
+              </figcaption>
+            </figure>
+            <figure>
+              <img src="/NagarTrace/photos/potholes-road.jpg" alt="A rain-soaked rural road filled with waterlogged potholes" loading="lazy" />
+              <figcaption>
+                <a href="https://commons.wikimedia.org/wiki/File:Potholes_on_road.jpg" target="_blank" rel="noreferrer">Photo: KEmel49, CC BY-SA 4.0</a>
+              </figcaption>
+            </figure>
+            <figure>
+              <img src="/NagarTrace/photos/deformed-road-bengaluru.jpg" alt="Deformed, cracked asphalt on an urban street" loading="lazy" />
+              <figcaption>
+                <a href="https://commons.wikimedia.org/wiki/File:Roads_deformed_T_munnekollala_Bengaluru.jpg" target="_blank" rel="noreferrer">Photo: Gangaasoonu, CC BY-SA 4.0</a>
+              </figcaption>
+            </figure>
+          </div>
+          <p className="photo-credit">
+            These are the roads this is for. Illustrative photos from Wikimedia Commons, not complaints filed here.
+          </p>
+        </div>
+      </section>
+
       <section className="section" style={{ paddingTop: 26 }}>
         <div className="container">
           {issues ? (
-            <Counters
-              items={[
-                { value: issues.length, label: 'Issues tracked live' },
-                { value: reports, label: 'Citizen reports' },
-                { value: fixed, label: 'Repairs confirmed' },
-              ]}
-            />
+            <>
+              <Counters
+                items={[
+                  { value: issues.length, label: 'Issues tracked live' },
+                  { value: reports, label: 'Citizen reports' },
+                  { value: fixed, label: 'Repairs confirmed' },
+                ]}
+              />
+              <p className="small-note" style={{ marginTop: 10 }}>Live counts from the public record.</p>
+            </>
           ) : (
-            <Counters items={[{ value: 0, label: 'Issues tracked live' }, { value: 0, label: 'Citizen reports' }, { value: 0, label: 'Repairs confirmed' }]} />
+            <p className="small-note">{err ? 'Live counts unavailable right now - the record server did not respond.' : 'Loading live counts.'}</p>
           )}
-          <p className="small-note" style={{ marginTop: 10 }}>Live counts from this running demo's synthetic dataset.</p>
         </div>
       </section>
 
@@ -161,7 +191,7 @@ export default function Home() {
               <span className="wm">!</span>
               <span className="mono-label">Missed deadline</span>
               <h3>Escalation</h3>
-              <p>Overdue issues are marked escalated to the municipal engineer, then the department head - in this demo these are recorded entries only; no notices are sent. Each step is kept in a recorded history.</p>
+              <p>Overdue issues are marked escalated to the municipal engineer, then the department head - these are recorded entries only; no notices are sent. Each step is kept in a recorded history.</p>
             </div>
           </div>
         </div>
@@ -171,9 +201,9 @@ export default function Home() {
         <div className="container">
           <span className="mono-label">Public status · no login</span>
           <h2>Live on the map</h2>
-          <p className="sub">Real reports from the running demo. Public locations are rounded to about 11 m. Photos are never shown publicly.</p>
+          <p className="sub">Latest from the public record. Public locations are rounded to about 11 m. Photos are never shown publicly.</p>
           {err ? <ErrorBox error={err} onRetry={load} /> : null}
-          {!issues && !err ? <Spinner label="Loading live issues. The free demo server may take a minute to wake up." /> : null}
+          {!issues && !err ? <Spinner label="Loading live issues. The free server sleeps when idle - first load can take a minute." /> : null}
           {issues ? (
             issues.length === 0 ? (
               <Empty>No reports yet. Be the first to report a hazard.</Empty>
@@ -219,7 +249,7 @@ export default function Home() {
             <div>
               <h4>The promise</h4>
               <p style={{ maxWidth: '44ch', margin: 0 }}>From a road hazard to a repair you can review. Right owner, real deadline, repair photos for review - and a recorded history of each step.</p>
-              <p className="small-note" style={{ marginTop: 18 }}>Demo build for Zinnovatio 4.0 by Team Grexars. All roads, contractors, warranties and identities shown are synthetic sample data. This app sends no real complaint and is not an emergency service. AI hazard detection and photo blur are not implemented.</p>
+              <p className="small-note" style={{ marginTop: 18 }}>Built for Zinnovatio 4.0 by Team Grexars. Sample records are labelled where they appear. This app sends no complaint to any real authority and is not an emergency service. AI hazard detection and photo blur are not implemented.</p>
             </div>
             <div className="footer-col">
               <h4>Explore</h4>
@@ -232,7 +262,7 @@ export default function Home() {
           <div className="footer-word">NAGAR<span>TRACE</span></div>
           <div className="footer-base">
             <span>© 2026 NagarTrace · Team Grexars</span>
-            <span>Synthetic data demo · Not a government service</span>
+            <span>Working prototype · Not a government service</span>
             <span>Made in India</span>
           </div>
         </div>

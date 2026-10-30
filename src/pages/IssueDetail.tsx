@@ -123,7 +123,7 @@ export default function IssueDetail() {
       </div>
     )
   }
-  if (!d || !me) return <div className="container section"><Spinner label="Loading issue. The free demo server may take a minute to wake up." /></div>
+  if (!d || !me) return <div className="container section"><Spinner label="Loading issue. The free server sleeps when idle - first load can take a minute." /></div>
 
   const ms = me.memberships
   // The issue DTO does not expose org ids, so panels key off the user's memberships and the
