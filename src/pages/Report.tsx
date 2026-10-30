@@ -54,20 +54,29 @@ export default function Report() {
     )
   }
 
-  // GPS-FIRST 15-SECOND CAPTURE BINDING (user-requested): the photo must be taken within 15 s
-  // of a fresh GPS fix, and moving away before the photo invalidates the fix. Honest scope:
-  // this REDUCES photo/location mismatch - a browser timer cannot prove where a photo was
-  // taken, and gallery picks inside the window are indistinguishable from camera shots.
+  // GPS-FIRST PHOTO BINDING. The feature (photo bound to a fresh GPS fix) was requested by
+  // the user, and the 15-second window was shown to them. The 60 m movement threshold is an
+  // engineering choice, not a verified standard. Honest scope: these checks REDUCE
+  // photo/location mismatch. A browser timer cannot prove where a photo was taken; gallery
+  // picks are indistinguishable from camera shots; file dates are editable hints only.
   const BIND_WINDOW_MS = 15_000
-  const MOVE_INVALIDATE_M = 60
+  const MOVE_INVALIDATE_M = 60 // engineering threshold - not authenticity proof
+  const FIX_MAX_ACCURACY_M = 100 // engineering threshold: worse fixes are too imprecise to bind to
   const distM = (a: { lat: number; lon: number }, b: { lat: number; lon: number }) => {
     const R = 6371000, dLa = (b.lat - a.lat) * Math.PI / 180, dLo = (b.lon - a.lon) * Math.PI / 180
     const h = Math.sin(dLa / 2) ** 2 + Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * Math.sin(dLo / 2) ** 2
     return 2 * R * Math.asin(Math.sqrt(h))
   }
-  const fixAge = () => (gps ? Date.now() - new Date(gps.captured_at).getTime() : Number.POSITIVE_INFINITY)
-  const windowLive = !!gps && !moved && fixAge() <= BIND_WINDOW_MS
-  const bound = !!photo && !!photoPickedAt && !!gps && !moved && photoPickedAt - new Date(gps.captured_at).getTime() <= BIND_WINDOW_MS
+  // Monotonic window clock: performance.now() never jumps with wall-clock changes.
+  const fixPerfAt = useRef<number | null>(null)
+  const pausedMs = useRef(0) // camera-app time excluded from the window for THIS fix
+  const pausedAtPick = useRef(0)
+  const hiddenAt = useRef<number | null>(null)
+  const [mtimeHint, setMtimeHint] = useState<'old' | 'unknown' | null>(null)
+  const elapsedMs = () => (fixPerfAt.current === null ? Number.POSITIVE_INFINITY : performance.now() - fixPerfAt.current - pausedMs.current)
+  const windowLive = !!gps && !moved && elapsedMs() <= BIND_WINDOW_MS
+  const bound = !!photo && photoPickedAt !== null && fixPerfAt.current !== null && !moved
+    && (photoPickedAt - fixPerfAt.current - pausedAtPick.current) <= BIND_WINDOW_MS
 
   // countdown re-render while the window is open; stop the movement watch on unmount
   useEffect(() => {
@@ -78,6 +87,7 @@ export default function Report() {
   useEffect(() => () => { if (watchId.current !== null) navigator.geolocation.clearWatch(watchId.current) }, [])
 
   const captureGps = () => {
+    if (!('geolocation' in navigator)) { setGpsErr('This browser or device has no location access'); return }
     setGpsBusy(true)
     setGpsErr(null)
     navigator.geolocation.getCurrentPosition(
@@ -88,15 +98,25 @@ export default function Report() {
           accuracy_m: Math.round(pos.coords.accuracy ?? 9999),
           captured_at: new Date().toISOString(),
         }
+        // A fresh fix starts a fresh window: any earlier photo is unbound and can never
+        // silently attach to this later fix/location.
+        fixPerfAt.current = performance.now()
+        pausedMs.current = 0
+        hiddenAt.current = null
         setGps(fix)
         setMoved(false)
         setBindErr(null)
         setPhotoPickedAt(null)
-        pickPhoto(null) // a fresh fix starts a fresh window: any earlier photo is unbound
-        // Movement before the photo invalidates the fix - it was taken somewhere else.
+        pickPhoto(null)
+        // Movement before the photo invalidates the fix. Jitter guard: invalidate only when
+        // the displacement exceeds BOTH the engineering threshold AND the combined accuracy
+        // radius of the two readings, and only on strictly newer sensor readings.
         if (watchId.current !== null) navigator.geolocation.clearWatch(watchId.current)
         watchId.current = navigator.geolocation.watchPosition((p2) => {
-          if (distM(fix, { lat: p2.coords.latitude, lon: p2.coords.longitude }) > MOVE_INVALIDATE_M) {
+          if (p2.timestamp <= pos.timestamp) return
+          const acc2 = Math.round(p2.coords.accuracy ?? 9999)
+          const d = distM(fix, { lat: p2.coords.latitude, lon: p2.coords.longitude })
+          if (d > MOVE_INVALIDATE_M && d > fix.accuracy_m + acc2) {
             setMoved(true)
             if (watchId.current !== null) navigator.geolocation.clearWatch(watchId.current)
           }
@@ -111,17 +131,51 @@ export default function Report() {
     )
   }
 
-  const pickPhoto = (f: File | null) => {
+  // Camera-app pause: opening the native camera suspends this page. If the window is LIVE
+  // when the page hides, the clock pauses; on return we take a fresh fix and only then give
+  // the hidden time back - confirmed same spot. If the re-fix shows movement, the fix is
+  // invalidated. A window that was already dead when the page hid gets nothing. A photo
+  // picked before expiry can never re-bind to a later fix: any new fix clears it (above).
+  useEffect(() => {
+    const onVis = () => {
+      if (document.hidden) {
+        if (fixPerfAt.current !== null && !moved && elapsedMs() <= BIND_WINDOW_MS) hiddenAt.current = performance.now()
+        return
+      }
+      if (hiddenAt.current === null) return
+      const paused = performance.now() - hiddenAt.current
+      hiddenAt.current = null
+      const fix = gps
+      if (!fix) return
+      navigator.geolocation.getCurrentPosition((p3) => {
+        const acc3 = Math.round(p3.coords.accuracy ?? 9999)
+        const d = distM(fix, { lat: p3.coords.latitude, lon: p3.coords.longitude })
+        if (d <= MOVE_INVALIDATE_M || d <= fix.accuracy_m + acc3) pausedMs.current += paused
+        else setMoved(true)
+        setTick((x) => x + 1)
+      }, () => setTick((x) => x + 1), { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 })
+    }
+    document.addEventListener('visibilitychange', onVis)
+    return () => document.removeEventListener('visibilitychange', onVis)
+  })
+
+    const pickPhoto = (f: File | null) => {
     setPhoto(f)
     setPhotoAssess(null)
     if (f) {
-      setPhotoPickedAt(Date.now())
+      setPhotoPickedAt(performance.now())
+      pausedAtPick.current = pausedMs.current
+      // File saved-date: a HINT only. mtimes are editable and often stripped by sharing
+      // apps, so an old or missing date never blocks - it is shown as unknown/hint.
+      if (!f.lastModified) setMtimeHint('unknown')
+      else setMtimeHint(Date.now() - f.lastModified > BIND_WINDOW_MS + 60_000 ? 'old' : null)
       if (!gps) setBindErr('Get a GPS fix first, then take the photo within 15 seconds.')
       else if (moved) setBindErr('You moved away from the GPS fix before the photo. Capture GPS again at the hazard, then take the photo within 15 seconds.')
-      else if (fixAge() > BIND_WINDOW_MS) setBindErr('The 15-second window ran out after the GPS fix. Capture GPS again, then take the photo.')
+      else if (elapsedMs() > BIND_WINDOW_MS) setBindErr('The 15-second window ran out after the GPS fix. Capture GPS again, then take the photo.')
       else setBindErr(null)
     } else {
       setPhotoPickedAt(null)
+      setMtimeHint(null)
     }
     if (photoUrl) URL.revokeObjectURL(photoUrl)
     setPhotoUrl(f ? URL.createObjectURL(f) : null)
@@ -133,7 +187,7 @@ export default function Report() {
     }
   }
 
-  const staleCapture = gps ? Date.now() - new Date(gps.captured_at).getTime() > 13 * 60 * 1000 : false
+    const staleCapture = gps ? Date.now() - new Date(gps.captured_at).getTime() > 13 * 60 * 1000 : false
 
   const submit = async () => {
     if (!photo) { setStep(0); return }
@@ -232,9 +286,9 @@ export default function Report() {
           <div className="field">
             <label>Location first</label>
             {gps ? (
-              <div className={gps.accuracy_m > 100 ? 'warn-box' : 'ok-box'} style={{ margin: 0 }}>
+              <div className={gps.accuracy_m > FIX_MAX_ACCURACY_M ? 'warn-box' : 'ok-box'} style={{ margin: 0 }}>
                 GPS locked: {gps.lat.toFixed(5)}, {gps.lon.toFixed(5)} (±{gps.accuracy_m} m)
-                {gps.accuracy_m > 100 ? ' - accuracy is too low, move to open sky and retry.' : ''}
+                {gps.accuracy_m > FIX_MAX_ACCURACY_M ? ' - accuracy is too low, move to open sky and retry.' : ''}
               </div>
             ) : (
               <div className="photo-drop">Stand at the hazard and capture GPS. We never store your location beyond this report.</div>
@@ -243,7 +297,7 @@ export default function Report() {
             <button className="btn dark" onClick={captureGps} disabled={gpsBusy}>{gpsBusy ? 'Getting GPS…' : gps ? 'Capture GPS again' : 'Capture GPS'}</button>
             {gps && !photo ? (
               windowLive ? (
-                <div className="notice-box" style={{ marginTop: 10 }}>Photo window open: <strong>{Math.max(0, Math.ceil((BIND_WINDOW_MS - fixAge()) / 1000))}s</strong> left. Take the photo now, right here.</div>
+                <div className="notice-box" style={{ marginTop: 10 }}>Photo window open: <strong>{Math.max(0, Math.ceil((BIND_WINDOW_MS - elapsedMs()) / 1000))}s</strong> left. Take the photo now, right here.</div>
               ) : (
                 <div className="warn-box" style={{ marginTop: 10 }}>{moved ? 'You moved away from this fix. Capture GPS again at the hazard.' : 'The 15-second window ran out. Capture GPS again, then take the photo.'}</div>
               )
@@ -258,8 +312,11 @@ export default function Report() {
               disabled={!gps || moved}
               onChange={(e) => pickPhoto(e.target.files?.[0] ?? null)}
             />
-            <div className="hint">GPS first, photo right after: this keeps the photo tied to this spot and reduces mismatched reports. It cannot prove where a photo was taken. Never shown publicly; the server removes hidden metadata on upload.</div>
+            <div className="hint">GPS first, photo right after. The 15-second window and 60 m movement check are engineering thresholds: they reduce mismatched reports, they cannot prove where a photo was taken. The clock pauses while your camera app is open, and we re-check you are at the same spot when you come back. Never shown publicly; the server removes hidden metadata on upload.</div>
             {bindErr ? <div className="error-box"><p>{bindErr}</p></div> : null}
+            {photo && bound ? <div className="ok-box" style={{ marginTop: 8 }}>Photo captured inside the window - bound to this spot (±{gps?.accuracy_m} m).</div> : null}
+            {mtimeHint === 'old' ? <div className="warn-box" style={{ marginTop: 8 }}>This file's saved date looks older than the capture window. File dates can be edited or stripped, so this is only a hint - if you just took this photo, you can continue.</div> : null}
+            {mtimeHint === 'unknown' ? <div className="hint" style={{ marginTop: 8 }}>This file has no saved date - recorded as unknown, not as evidence for or against freshness.</div> : null}
             {photoUrl ? <img src={photoUrl} className="photo-preview" alt="Selected hazard" /> : null}
             {photoAssess ? (
               <details className="photo-details">
@@ -274,7 +331,7 @@ export default function Report() {
             ) : null}
           </div>
           <div className="action-row">
-            <button className="btn primary" disabled={!bound || (gps?.accuracy_m ?? 9999) > 100} onClick={() => setStep(1)}>Next: what is it?</button>
+            <button className="btn primary" disabled={!bound || (gps?.accuracy_m ?? 9999) > FIX_MAX_ACCURACY_M} onClick={() => setStep(1)}>Next: what is it?</button>
           </div>
         </div>
       ) : null}
