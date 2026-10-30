@@ -88,7 +88,7 @@ export default function Home() {
                   {[...issues].sort((a, b) => b.updated_at.localeCompare(a.updated_at)).slice(0, 3).map((i) => (
                     <Link key={i.id} to={`/issues/${i.id}`} className="record-row">
                       <div className="record-row-top">
-                        <HazardTag hazard={i.hazard} />
+                        <HazardTag hazard={i.hazard} hazards={i.hazards} />
                         <StatusPill status={i.status} />
                       </div>
                       <div className="issue-meta">

@@ -18,6 +18,22 @@ export default function Report() {
   const [photo, setPhoto] = useState<File | null>(null)
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
   const [hazard, setHazard] = useState<Hazard | null>(null)
+  const [extraHazards, setExtraHazards] = useState<Hazard[]>([])
+  // Multi-hazard pick: first choice is the PRIMARY hazard; further taps add/remove others.
+  // Tapping the primary promotes the oldest extra (or clears when there are none).
+  const pickHazard = (key: Hazard) => {
+    if (hazard === key) {
+      const [next, ...rest] = extraHazards
+      setHazard(next ?? null)
+      setExtraHazards(rest)
+    } else if (extraHazards.includes(key)) {
+      setExtraHazards(extraHazards.filter((h) => h !== key))
+    } else if (!hazard) {
+      setHazard(key)
+    } else {
+      setExtraHazards([...extraHazards, key])
+    }
+  }
   const [danger, setDanger] = useState(false)
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState(false)
@@ -213,6 +229,7 @@ export default function Report() {
           lon: gps.lon,
           accuracy_m: gps.accuracy_m,
           hazard,
+          hazards: extraHazards.length ? [hazard, ...extraHazards] : undefined,
           danger: danger || undefined,
           note: note.trim() || undefined,
           photo_upload_id: staged.upload_id,
@@ -339,10 +356,12 @@ export default function Report() {
       {step === 1 ? (
         <div className="card pad-lg">
           <h2 style={{ marginTop: 0 }}>What is the hazard?</h2>
+          <p className="muted" style={{ marginTop: -6 }}>Pick everything you see at this spot. Your first pick is the main one.</p>
           <div className="hazard-grid">
             {hazards.map(([key, m]) => (
-              <button key={key} className={`hazard-pick ${hazard === key ? 'sel' : ''}`} onClick={() => setHazard(key)}>
+              <button key={key} className={`hazard-pick ${hazard === key ? 'sel' : extraHazards.includes(key) ? 'sel extra' : ''}`} onClick={() => pickHazard(key)}>
                 <span className="ic" aria-hidden><HazardIcon kind={m.icon} size={26} /></span> {m.label}
+                {hazard === key ? <span className="primary-chip">main</span> : null}
               </button>
             ))}
           </div>
@@ -368,7 +387,7 @@ export default function Report() {
           <h2 style={{ marginTop: 0 }}>Review and send</h2>
           <table className="table">
             <tbody>
-              <tr><th>Hazard</th><td>{hazard ? HAZARD_META[hazard].label : '-'}{danger ? ' (marked dangerous)' : ''}</td></tr>
+              <tr><th>Hazard</th><td>{hazard ? [hazard, ...extraHazards].map((h, i) => HAZARD_META[h].label + (i === 0 && extraHazards.length ? ' (main)' : '')).join(', ') : '-'}{danger ? ' (marked dangerous)' : ''}</td></tr>
               <tr><th>Location</th><td>{gps ? `${gps.lat.toFixed(5)}, ${gps.lon.toFixed(5)} (±${gps.accuracy_m} m)` : '-'}</td></tr>
               <tr><th>Photo</th><td>Attached (uploaded with the report)</td></tr>
               {note.trim() ? <tr><th>Note</th><td>{note.trim()}</td></tr> : null}

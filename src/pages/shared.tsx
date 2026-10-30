@@ -6,7 +6,7 @@ export function IssueCard({ issue, to }: { issue: PublicIssue; to: string }) {
   return (
     <Link to={to} className="card issue-card">
       <div className="issue-top">
-        <HazardTag hazard={issue.hazard} />
+        <HazardTag hazard={issue.hazard} hazards={issue.hazards} />
         <StatusPill status={issue.status} />
       </div>
       {issue.complaint_id ? <div className="issue-meta"><span>Complaint {issue.complaint_id}</span></div> : null}
