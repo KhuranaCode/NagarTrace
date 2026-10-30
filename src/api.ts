@@ -1,4 +1,5 @@
-import { API_BASE } from './config'
+import { API_BASE, DEMO } from './config'
+import { demoApi } from './demo/api-demo'
 import { accessToken } from './auth'
 import type { Badges, Issue, IssueDetail, LeaderRow, Me, NhaiAwardsBrowse, PublicIssue, ReportResult, Scorecard } from './types'
 
@@ -54,7 +55,7 @@ export interface Health {
   policy: string
 }
 
-export const api = {
+const realApi = {
   health: () => req<Health>('/health', { auth: false }),
 
   me: () => req<Me>('/v1/me'),
@@ -179,3 +180,7 @@ export const api = {
   deleteFollowupCampaign: (campaignId: string) =>
     req<{ revoked: boolean }>(`/v1/followup-campaigns/${campaignId}`, { method: 'DELETE' }),
 }
+
+export type Api = typeof realApi
+/** Demo builds serve the synthetic showcase adapter; real builds talk to the API. */
+export const api: Api = DEMO ? (demoApi as Api) : realApi
