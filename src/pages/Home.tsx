@@ -63,7 +63,7 @@ export default function Home() {
             </p>
             <div className="hero-cta">
               <Link to="/report" className="btn dark">Report a hazard →</Link>
-              <Link to="/issues" className="btn ghost">See live issues</Link>
+              <Link to="/issues" className="btn ghost">{DEMO ? 'See sample issues' : 'See live issues'}</Link>
             </div>
             <ul className="hero-feats reveal-stagger">
               <li>Location and time captured with the report</li>
