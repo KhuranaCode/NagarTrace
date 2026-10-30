@@ -5,3 +5,7 @@ export const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_R_lRZf8CX4yGWlclflIm7w_Q
 
 // Flip to true only after the Supabase Google provider is verified live by the backend.
 export const GOOGLE_AUTH_ENABLED = false
+
+// Flip to true only after the project mail service is confirmed to send numeric codes
+// (default Supabase templates are link-only; editing them needs custom SMTP - owner decision).
+export const EMAIL_OTP_ENABLED = false

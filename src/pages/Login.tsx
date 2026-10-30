@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth'
-import { GOOGLE_AUTH_ENABLED } from '../config'
+import { EMAIL_OTP_ENABLED, GOOGLE_AUTH_ENABLED } from '../config'
 
 function retrySeconds(err: string): number | null {
   const m = err.match(/after (\d+) seconds?/i)
@@ -33,7 +33,7 @@ export default function Login() {
   const nav = useNavigate()
   const loc = useLocation()
   const from = (loc.state as { from?: string } | null)?.from ?? '/app'
-  const [mode, setMode] = useState<'in' | 'up' | 'otp'>('otp')
+  const [mode, setMode] = useState<'in' | 'up' | 'otp'>(EMAIL_OTP_ENABLED ? 'otp' : 'in')
   const [otpStage, setOtpStage] = useState<'email' | 'code'>('email')
   const [otpCode, setOtpCode] = useState('')
   const [email, setEmail] = useState('')
@@ -175,14 +175,22 @@ export default function Login() {
             </button>
             <p className="small-note" style={{ textAlign: 'center', margin: '10px 0 0' }}>
               Google sign-in is built but not open to everyone yet - the project owner has not enabled public
-              access with Google. Email sign-in below works today.
+              access with Google. Password sign-in (tab above) works today.
             </p>
           </>
         )}
         {GOOGLE_AUTH_ENABLED ? <p className="small-note" style={{ textAlign: 'center', margin: '10px 0 0' }}>or use email below</p> : null}
       </div>
 
-      {mode === 'otp' ? (
+      {mode === 'otp' && !EMAIL_OTP_ENABLED ? (
+      <div className="card pad-lg">
+        <p style={{ marginTop: 0 }}>
+          Sign-in by email code is built and switches on once the project's mail service can send numeric codes -
+          right now it can only send link emails, and setting that up is with the project owner.
+        </p>
+        <p className="muted" style={{ marginBottom: 0 }}>Password sign-in works today - use the Password tab.</p>
+      </div>
+      ) : mode === 'otp' ? (
       <form onSubmit={submit} className="card pad-lg">
         <div className="field">
           <label htmlFor="email">Email</label>
@@ -199,6 +207,7 @@ export default function Login() {
         <button className="btn primary block" disabled={busy || cooldown > 0 || (otpStage === 'code' && otpCode.trim().length !== 6)}>
           {busy ? 'Please wait…' : cooldown > 0 ? `Try again in ${cooldown}s` : otpStage === 'email' ? 'Send sign-in code' : 'Verify code and sign in'}
         </button>
+
         {otpStage === 'code' ? (
           <p style={{ textAlign: 'center', marginBottom: 0 }}>
             Did not get it?{' '}
