@@ -10,6 +10,7 @@ import Login from './pages/Login'
 import PublicIssueDetail from './pages/PublicIssueDetail'
 import PublicIssues from './pages/PublicIssues'
 import Report from './pages/Report'
+import Updates from './pages/Updates'
 import { TopBar } from './ui'
 
 function oauthErrorFromUrl(): string | null {
@@ -64,6 +65,7 @@ export default function App() {
         <Route path="/app" element={<Dashboard />} />
         <Route path="/app/issues/:id" element={<IssueDetail />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/updates" element={<Updates />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
