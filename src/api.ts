@@ -77,8 +77,28 @@ export const api = {
   },
   issue: (id: string) => req<IssueDetail>(`/v1/issues/${id}`),
 
-  report: (body: { lat: number; lon: number; accuracy_m?: number; hazard: string; danger?: boolean; note?: string; captured_at: string }, idempotencyKey: string) =>
+  report: (body: { lat: number; lon: number; accuracy_m?: number; hazard: string; danger?: boolean; note?: string; photo_upload_id?: string; captured_at: string }, idempotencyKey: string) =>
     req<ReportResult>('/v1/reports', { method: 'POST', body, headers: { 'idempotency-key': idempotencyKey } }),
+
+  stageUpload: async (lat: number, lon: number, file: Blob, contentType: string) => {
+    const t = await accessToken()
+    const res = await fetch(`${API_BASE}/v1/uploads/stage?lat=${lat}&lon=${lon}`, {
+      method: 'POST',
+      headers: { ...(t ? { authorization: `Bearer ${t}` } : {}), 'content-type': contentType },
+      body: file,
+    })
+    if (!res.ok) {
+      let code = 'error'
+      let message = `Photo upload failed (${res.status})`
+      try {
+        const j = await res.json()
+        if (j?.error) code = j.error
+        if (j?.message) message = j.message
+      } catch { /* keep defaults */ }
+      throw new ApiError(res.status, code, message)
+    }
+    return (await res.json()) as { upload_id: string; expires_at: string }
+  },
 
   uploadEvidence: async (issueId: string, kind: 'report' | 'after' | 'dispute', lat: number, lon: number, file: Blob, contentType: string) => {
     const t = await accessToken()

@@ -82,7 +82,12 @@ export default function Report() {
     if (!gps || !hazard) return
     setBusy(true)
     setErr(null)
+    // The photo and the report are one thing: stage the photo first, then the
+    // report binds it in the same server transaction. If either step fails,
+    // nothing half-exists - no report without its photo.
     try {
+      setPhotoState('uploading')
+      const staged = await api.stageUpload(gps.lat, gps.lon, photo, photo.type || 'image/jpeg')
       const r = await api.report(
         {
           lat: gps.lat,
@@ -91,25 +96,23 @@ export default function Report() {
           hazard,
           danger: danger || undefined,
           note: note.trim() || undefined,
+          photo_upload_id: staged.upload_id,
           captured_at: new Date().toISOString(),
         },
         idemKey.current,
       )
       setResult(r)
       idemKey.current = crypto.randomUUID()
-      if (photo) {
-        setPhotoState('uploading')
-        try {
-          const blob: Blob = photo
-        const up = await api.uploadEvidence(r.issue.id, 'report', gps.lat, gps.lon, blob, blob.type || 'image/jpeg')
-          setPhotoState('done')
-          setPhotoMsg(up.location_ok ? 'Photo added to the issue.' : 'Photo added, but it looks far from the report location and may not count as evidence.')
-        } catch (e) {
-          setPhotoState('failed')
-          setPhotoMsg(e instanceof Error ? e.message : 'Photo upload failed.')
-        }
+      if (r.photo) {
+        setPhotoState('done')
+        setPhotoMsg(r.photo.location_ok ? 'Photo attached to this report.' : 'Photo attached, but it looks far from the report location and may not count as evidence.')
+      } else {
+        setPhotoState('idle')
+        setPhotoMsg(null)
       }
     } catch (e) {
+      setPhotoState('failed')
+      setPhotoMsg(null)
       setErr(e)
       if (e instanceof ApiError && e.code === 'stale_report') setStep(0)
     } finally {
@@ -127,9 +130,7 @@ export default function Report() {
           ) : (
             <p>Your report is in. A municipal officer verifies new reports before an owner and deadline are assigned.</p>
           )}
-          {photoState === 'uploading' ? <p className="muted">Uploading your photo…</p> : null}
           {photoState === 'done' ? <div className="ok-box">{photoMsg}</div> : null}
-          {photoState === 'failed' ? <div className="warn-box">{photoMsg} A photo is required for this report - add it from the issue page to complete it.</div> : null}
           <div className="action-row" style={{ marginTop: 18 }}>
             <Link to={`/app/issues/${result.issue.id}`} className="btn primary">Track this issue</Link>
             <button className="btn ghost" onClick={() => { setResult(null); setStep(0); setGps(null); pickPhoto(null); setHazard(null); setNote(''); setDanger(false); setPhotoState('idle') }}>Report another</button>

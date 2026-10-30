@@ -94,6 +94,7 @@ export interface ReportResult {
   merged_into_existing: boolean
   replayed: boolean
   issue: Issue
+  photo?: { evidence_id: string; location_ok: boolean } | null
 }
 
 export interface Scorecard {
