@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api, ApiError } from '../api'
 import { useAuth } from '../auth'
@@ -27,6 +27,14 @@ export default function Report() {
   const [photoAssess, setPhotoAssess] = useState<MetadataAssessment | null>(null)
   const [photoMsg, setPhotoMsg] = useState<string | null>(null)
   const idemKey = useRef<string>(crypto.randomUUID())
+  const pointsBaseline = useRef<number | null>(null)
+  const [pointsAwarded, setPointsAwarded] = useState<number | null>(null)
+
+  // Baseline for honest points feedback: we only ever show the measured delta.
+  useEffect(() => {
+    if (!session) return
+    api.me().then((m) => { pointsBaseline.current = m.points }).catch(() => undefined)
+  }, [session])
 
   const hazards = useMemo(() => Object.entries(HAZARD_META) as [Hazard, { label: string; icon: string }][], [])
 
@@ -102,6 +110,14 @@ export default function Report() {
         idemKey.current,
       )
       setResult(r)
+      // Real points delta only - replays/merges may award less or nothing.
+      if (pointsBaseline.current !== null) {
+        api.me().then((m) => {
+          const d = m.points - (pointsBaseline.current ?? m.points)
+          setPointsAwarded(d > 0 ? d : 0)
+          pointsBaseline.current = m.points
+        }).catch(() => setPointsAwarded(null))
+      }
       idemKey.current = crypto.randomUUID()
       if (r.photo) {
         setPhotoState('done')
@@ -131,9 +147,14 @@ export default function Report() {
             <p>Your report is in. A municipal officer verifies new reports before an owner and deadline are assigned.</p>
           )}
           {photoState === 'done' ? <div className="ok-box">{photoMsg}</div> : null}
+          {pointsAwarded !== null && pointsAwarded > 0 ? (
+            <div className="ok-box">+{pointsAwarded} points earned for this report.</div>
+          ) : result.replayed ? null : pointsAwarded === 0 ? (
+            <p className="small-note">No new points this time - merged confirmations and replays earn less or nothing by design.</p>
+          ) : null}
           <div className="action-row" style={{ marginTop: 18 }}>
             <Link to={`/app/issues/${result.issue.id}`} className="btn primary">Track this issue</Link>
-            <button className="btn ghost" onClick={() => { setResult(null); setStep(0); setGps(null); pickPhoto(null); setHazard(null); setNote(''); setDanger(false); setPhotoState('idle') }}>Report another</button>
+            <button className="btn ghost" onClick={() => { setResult(null); setStep(0); setGps(null); pickPhoto(null); setHazard(null); setNote(''); setDanger(false); setPhotoState('idle'); setPointsAwarded(null) }}>Report another</button>
           </div>
         </div>
       </div>
