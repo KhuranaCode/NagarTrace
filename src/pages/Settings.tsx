@@ -88,7 +88,7 @@ export default function Settings() {
       <div className="card pad-lg" style={{ marginBottom: 18 }}>
         <h2 style={{ marginTop: 0 }}>Emails &amp; reminders</h2>
         <p className="muted" style={{ marginBottom: 10 }}>
-          No complaint or reminder emails have been sent by NagarTrace. Automated follow-ups aren't connected yet. (Account verification emails from the sign-in service are separate and already work.)
+          No complaint or reminder emails have been sent by NagarTrace. Automated follow-ups aren't connected yet. Account verification is handled separately by the sign-in service.
         </p>
         <p className="muted" style={{ marginBottom: 10 }}>
           When report reminders launch, they will be opt-in from this page first. Messages to an authority about one of your reports
