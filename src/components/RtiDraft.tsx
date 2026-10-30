@@ -26,7 +26,7 @@ I reported a road hazard (${hazard}) at ${where} on ${d.created_at.slice(0, 10)}
 1. The current status of complaint ${ref} and all action taken on it so far, with dates.
 2. The name and designation of the officer(s) responsible for resolving it.
 3. The public authority and/or contractor responsible for maintenance of the road at the above location, with the relevant work order or contract reference.
-4. The timeline by which the repair is planned, and the reason for any delay.
+4. If the authority's records contain a sanctioned schedule, target date or work order covering the repair of this stretch, a copy of that record.
 
 Application fee: Rs [10 for Central authorities / as per your State RTI Rules] paid by [IPO / court fee stamp / online payment - as accepted by the authority].
 
@@ -63,7 +63,7 @@ Signature: ______________`
           </div>
           <p className="small-note" style={{ marginBottom: 0 }}>
             Before filing: fill every [bracket] yourself. Verify the correct public authority and its Public Information Officer - NagarTrace does not know them.
-            Central government authorities accept RTI online at rtionline.gov.in (portal text limited to 3000 characters; fee per RTI Rules, 2012).
+            Ministries and Departments of the Government of India accept RTI online at rtionline.gov.in (portal text limited to 3000 characters; fee per RTI Rules, 2012). Not every public authority is on that portal.
             State authorities have their own rules, fees and portals. A reply is generally due within 30 days of the authority receiving your application.
           </p>
         </>
