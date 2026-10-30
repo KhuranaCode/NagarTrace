@@ -148,9 +148,9 @@ export default function Report() {
           )}
           {photoState === 'done' ? <div className="ok-box">{photoMsg}</div> : null}
           {pointsAwarded !== null && pointsAwarded > 0 ? (
-            <div className="ok-box">+{pointsAwarded} points earned for this report.</div>
+            <div className="ok-box">Your points went up by {pointsAwarded} since this page opened.</div>
           ) : result.replayed ? null : pointsAwarded === 0 ? (
-            <p className="small-note">No new points this time - merged confirmations and replays earn less or nothing by design.</p>
+            <p className="small-note">No new points recorded yet{result.merged_into_existing ? ' - merged confirmations earn less or nothing by design' : ''}.</p>
           ) : null}
           <div className="action-row" style={{ marginTop: 18 }}>
             <Link to={`/app/issues/${result.issue.id}`} className="btn primary">Track this issue</Link>

@@ -12,6 +12,42 @@ export type UpdateEntry = {
 export const UPDATES: UpdateEntry[] = [
   {
     date: '2026-10-30',
+    title: 'Points shown on every report',
+    detail: 'After you submit a report you now see the exact points it earned - measured from your account, never an assumed number. Merged duplicates and replays honestly earn less or nothing.',
+    area: 'Website',
+  },
+  {
+    date: '2026-10-30',
+    title: 'Follow-up plan on every issue',
+    detail: 'Each issue now shows the day 7/10/15/30 chase plan and its true state: due reminders are plainly marked not sent (no verified delivery channel yet), and recorded escalations are labeled internal status, not sent notices.',
+    area: 'Website',
+  },
+  {
+    date: '2026-10-30',
+    title: 'Cross-checks across an issue\'s photos',
+    detail: 'The private photo panel now compares all of an issue\'s photos: upload chronology, the server\'s upload-time location checks, and pixel similarity that can catch a reused photo. Every result is labeled with what it can and cannot prove.',
+    area: 'Website',
+  },
+  {
+    date: '2026-10-30',
+    title: 'Your name, your choice (Settings)',
+    detail: 'A new Settings page holds your public name and ward. The leaderboard only ever shows the name you choose - it is never filled from your Google account.',
+    area: 'Website',
+  },
+  {
+    date: '2026-10-30',
+    title: 'Daily streaks are live',
+    detail: 'Streaks count days with verified activity (verified reports, first reports, confirmed fixes) and show on your desk with milestone chips. Timezone-aware, no made-up numbers.',
+    area: 'API',
+  },
+  {
+    date: '2026-10-30',
+    title: 'Photo-first reporting',
+    detail: 'A report and its photo are now one atomic thing: the photo is staged and bound to the report in a single server transaction, so no report exists without its evidence. Retries are safe - re-sending never double-files.',
+    area: 'API',
+  },
+  {
+    date: '2026-10-30',
     title: 'Welcome card for new accounts',
     detail: 'First visit to your desk now shows what NagarTrace does and the three steps to your first tracked repair.',
     area: 'Website',
@@ -34,8 +70,8 @@ export const UPDATES: UpdateEntry[] = [
 export const UPCOMING: UpdateEntry[] = [
   {
     date: '2026-10-30',
-    title: 'Streaks API',
-    detail: 'Daily streaks derived only from verified activity (verified reports, first-reporter bonus, confirmed fixes). Code and tests are done; it goes live when the backend deployment owner applies it.',
-    area: 'API',
+    title: 'Branded emails, ready but not sending',
+    detail: 'Verification, welcome and reminder email templates are designed and stored. Sending starts only when a real mail provider exists - and messages to authorities additionally need a verified recipient and your approval of the exact text.',
+    area: 'Website',
   },
 ]

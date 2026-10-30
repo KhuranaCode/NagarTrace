@@ -14,11 +14,16 @@ Every template below is inert text until ALL of these exist for a given send:
 3. Where Gmail access is involved, a separate consent scope - product signup
    does not grant it.
 
-Merge fields use {{FIELD}}. `{{TOKEN}}` in verify-email.html is the Supabase
-numeric-OTP slot (requires the custom SMTP + template change, peer-owned).
+Merge fields use {{FIELD}}. These placeholders are NOT verified against any
+provider's template syntax - confirm the owning provider's current variables
+at integration time. verify-email.html is the confirmation-link/button flow
+(the current default shape); verify-email-otp.html is the numeric-OTP variant,
+which additionally needs custom SMTP + a provider template change (both
+peer-owned) - do not switch flows while SMTP is blocked.
 
 Files:
-- verify-email.html - branded signup verification (numeric OTP variant)
+- verify-email.html - branded signup verification (confirmation-link button)
+- verify-email-otp.html - numeric-OTP variant (needs custom SMTP first)
 - welcome.html - post-verification welcome
 - reminder-day7.html / reminder-day10.html / reminder-day15.html - report follow-ups TO THE REPORTER (status nudge, not authority contact)
 - authority-reminder.html - draft reminder TO the responsible authority (needs verified recipient + per-report approval)
