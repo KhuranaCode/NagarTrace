@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { api, ApiError } from '../api'
+import { assessEvidence, formatVerdict, parsePhotoMetadata, type MetadataAssessment } from '../evidence/photo-metadata'
 import { useAuth } from '../auth'
 import type { IssueDetail as Detail, Me } from '../types'
 import { Deadline, ErrorBox, fmtDate, HazardTag, MapView, Spinner, STATUS_META, StatusPill, SyntheticBadge } from '../ui'
@@ -26,6 +27,8 @@ const EVENT_LABELS: Record<string, string> = {
 function EvidenceImage({ issueId, evidenceId, cap }: { issueId: string; evidenceId: string; cap: string }) {
   const [url, setUrl] = useState<string | null>(null)
   const [failed, setFailed] = useState(false)
+  const [assess, setAssess] = useState<MetadataAssessment | null>(null)
+  const [metaBusy, setMetaBusy] = useState(false)
   useEffect(() => {
     let alive = true
     let obj: string | null = null
@@ -34,12 +37,44 @@ function EvidenceImage({ issueId, evidenceId, cap }: { issueId: string; evidence
       .catch(() => alive && setFailed(true))
     return () => { alive = false; if (obj) URL.revokeObjectURL(obj) }
   }, [issueId, evidenceId])
+
+  // Reviewer aid: parse the stored photo's metadata on demand, on this device only.
+  // The server re-encodes uploads as JPEG and drops EXIF, so most stored photos will
+  // honestly report 'insufficient-data' - that means 'nothing to check', not suspicion.
+  const loadDetails = async () => {
+    if (!url || assess || metaBusy) return
+    setMetaBusy(true)
+    try {
+      const blob = await (await fetch(url)).blob()
+      const meta = await parsePhotoMetadata(blob)
+      setAssess(assessEvidence(meta))
+    } catch {
+      setAssess(null)
+    } finally {
+      setMetaBusy(false)
+    }
+  }
+
   if (failed) return <div className="evidence-item"><div className="photo-drop">No access</div><div className="cap">{cap}</div></div>
   if (!url) return <div className="evidence-item"><div className="photo-drop">Loading…</div><div className="cap">{cap}</div></div>
   return (
     <div className="evidence-item">
       <a href={url} target="_blank" rel="noreferrer"><img src={url} alt={cap} /></a>
       <div className="cap">{cap}</div>
+      <details className="photo-details" onToggle={(e) => { if ((e.target as HTMLDetailsElement).open) void loadDetails() }}>
+        <summary>Photo details{assess ? ` - ${formatVerdict(assess.verdict)}` : ''}</summary>
+        {metaBusy ? <p className="small-note">Reading metadata on your device…</p> : null}
+        {assess ? (
+          <>
+            <ul>
+              {assess.signals.map((sig) => (
+                <li key={sig.id} className={`sig-${sig.state}`}><strong>{sig.label}:</strong> {sig.detail}</li>
+              ))}
+            </ul>
+            <p className="small-note">Read on your device only. Uploads are re-encoded and stripped of EXIF, so 'insufficient data' usually just means there is nothing left to check - it is not evidence of manipulation.</p>
+          </>
+        ) : null}
+      </details>
     </div>
   )
 }
