@@ -26,7 +26,7 @@ function detail(d: DemoIssue): IssueDetail {
 
 export const demoApi = {
   health: async () => { await delay(60); return { ok: true, verification_mode: 'demo', unrouted_triage: 'demo', policy: 'demo build - synthetic 30-day activity' } },
-  me: async (): Promise<Me> => { await delay(); return { id: DEMO_USER_ID, alias: 'demo-visitor', ward: 'Ward 9', points: 64, created_at: new Date(Date.now() - 21 * 86400e3).toISOString(), memberships: [] } },
+  me: async (): Promise<Me> => { await delay(); return { id: DEMO_USER_ID, alias: 'demo-visitor', ward: '9', points: 64, created_at: new Date(Date.now() - 21 * 86400e3).toISOString(), memberships: [] } },
   patchMe: async (_body: { alias?: string; ward?: string }) => { await delay(); return { ok: true as const } },
   badges: async (): Promise<Badges> => {
     await delay()
@@ -90,7 +90,7 @@ export const demoApi = {
       hazards: (body.hazards?.length ? body.hazards : [body.hazard]) as Issue['hazard'][],
       status: 'reported',
       severity: 3,
-      ward: 'Ward 9',
+      ward: '9',
       location: { lat: body.lat, lon: body.lon },
       responsible: null,
       deadline_at: null,

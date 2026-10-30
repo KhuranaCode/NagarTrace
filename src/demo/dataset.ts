@@ -23,10 +23,10 @@ const NOW = Date.now()
 export const DEMO_USER_ID = 'demo-user'
 
 const WARDS = [
-  { ward: 'Ward 4', lat: 30.7046, lon: 76.7179 },
-  { ward: 'Ward 9', lat: 30.711, lon: 76.733 },
-  { ward: 'Ward 13', lat: 30.698, lon: 76.705 },
-  { ward: 'Ward 21', lat: 30.679, lon: 76.724 },
+  { ward: '4', lat: 30.7046, lon: 76.7179 },
+  { ward: '9', lat: 30.711, lon: 76.733 },
+  { ward: '13', lat: 30.698, lon: 76.705 },
+  { ward: '21', lat: 30.679, lon: 76.724 },
 ] as const
 
 const HAZARDS: Hazard[] = ['pothole', 'crack', 'waterlogging', 'broken_edge', 'missing_cover', 'other']
@@ -113,15 +113,15 @@ export function toIssue(d: DemoIssue): Issue {
 }
 
 export const DEMO_LEADERBOARD: LeaderRow[] = [
-  { alias: 'demo-aditi', ward: 'Ward 9', points: 168 },
-  { alias: 'demo-kabir', ward: 'Ward 4', points: 141 },
-  { alias: 'demo-sana', ward: 'Ward 13', points: 122 },
-  { alias: 'demo-vikram', ward: 'Ward 9', points: 104 },
-  { alias: 'demo-meera', ward: 'Ward 21', points: 88 },
-  { alias: 'demo-arjun', ward: 'Ward 4', points: 71 },
-  { alias: 'demo-naina', ward: 'Ward 13', points: 54 },
-  { alias: 'demo-rohan', ward: 'Ward 21', points: 33 },
-  { alias: 'demo-visitor', ward: 'Ward 9', points: 64 },
+  { alias: 'demo-aditi', ward: '9', points: 168 },
+  { alias: 'demo-kabir', ward: '4', points: 141 },
+  { alias: 'demo-sana', ward: '13', points: 122 },
+  { alias: 'demo-vikram', ward: '9', points: 104 },
+  { alias: 'demo-meera', ward: '21', points: 88 },
+  { alias: 'demo-arjun', ward: '4', points: 71 },
+  { alias: 'demo-naina', ward: '13', points: 54 },
+  { alias: 'demo-rohan', ward: '21', points: 33 },
+  { alias: 'demo-visitor', ward: '9', points: 64 },
 ].sort((a, b) => b.points - a.points)
 
 export const DEMO_AWARDS: NhaiAwardsBrowse = {
