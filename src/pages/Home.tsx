@@ -263,6 +263,7 @@ export default function Home() {
             <div className="footer-col">
               <h4>Explore</h4>
               <Link to="/issues">Live issues</Link>
+              <Link to="/records">Govt records</Link>
               <Link to="/report">Report a hazard</Link>
               <Link to="/leaderboard">Ward leaderboard</Link>
               <a href="https://github.com/KhuranaCode/nagartrace-api" target="_blank" rel="noreferrer">API source</a>
