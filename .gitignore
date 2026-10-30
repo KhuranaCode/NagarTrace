@@ -4,3 +4,4 @@ dist/
 .env.*
 .DS_Store
 dist-demo/
+dist-demo-v/
