@@ -149,7 +149,6 @@ export function TopBar({ points }: { points?: number | null }) {
   const links = (
     <>
       <NavLink to="/issues" end>Live issues</NavLink>
-      <NavLink to="/records">Govt records</NavLink>
       {session ? <NavLink to="/app">My desk</NavLink> : null}
       {session ? <NavLink to="/leaderboard">Leaderboard</NavLink> : null}
       {session ? <NavLink to="/app/settings">Profile</NavLink> : null}
@@ -184,7 +183,6 @@ export function TopBar({ points }: { points?: number | null }) {
           <nav className="menu-links" onClick={(e) => e.stopPropagation()}>
             <NavLink to="/">Home</NavLink>
             <NavLink to="/issues" end>Live issues</NavLink>
-      <NavLink to="/records">Govt records</NavLink>
             <NavLink to="/report">Report a hazard</NavLink>
             {session ? <NavLink to="/app">My desk</NavLink> : <NavLink to="/login">Sign in</NavLink>}
             {session ? <NavLink to="/leaderboard">Leaderboard</NavLink> : null}
