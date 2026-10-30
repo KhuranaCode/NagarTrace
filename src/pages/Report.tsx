@@ -35,6 +35,7 @@ export default function Report() {
     }
   }
   const [danger, setDanger] = useState(false)
+  const [otherText, setOtherText] = useState('') // 'Other' hazard detail - always optional
   const [note, setNote] = useState('')
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<unknown>(null)
@@ -231,7 +232,7 @@ export default function Report() {
           hazard,
           hazards: extraHazards.length ? [hazard, ...extraHazards] : undefined,
           danger: danger || undefined,
-          note: note.trim() || undefined,
+          note: (otherText.trim() ? `Other: ${otherText.trim()}${note.trim() ? ' - ' + note.trim() : ''}` : note.trim()) || undefined,
           photo_upload_id: staged.upload_id,
           captured_at: new Date().toISOString(),
         },
@@ -365,6 +366,12 @@ export default function Report() {
               </button>
             ))}
           </div>
+          {(hazard === 'other' || extraHazards.includes('other')) ? (
+            <div className="field" style={{ marginTop: 14 }}>
+              <label htmlFor="other-hazard">What is it? (optional)</label>
+              <input id="other-hazard" type="text" maxLength={120} placeholder="e.g. Open drain, fallen tree, loose wires" value={otherText} onChange={(e) => setOtherText(e.target.value)} />
+            </div>
+          ) : null}
           <div className="field" style={{ marginTop: 18 }}>
             <label className="checkrow">
               <input type="checkbox" checked={danger} onChange={(e) => setDanger(e.target.checked)} />
@@ -390,6 +397,7 @@ export default function Report() {
               <tr><th>Hazard</th><td>{hazard ? [hazard, ...extraHazards].map((h, i) => HAZARD_META[h].label + (i === 0 && extraHazards.length ? ' (main)' : '')).join(', ') : '-'}{danger ? ' (marked dangerous)' : ''}</td></tr>
               <tr><th>Location</th><td>{gps ? `${gps.lat.toFixed(5)}, ${gps.lon.toFixed(5)} (±${gps.accuracy_m} m)` : '-'}</td></tr>
               <tr><th>Photo</th><td>Attached (uploaded with the report)</td></tr>
+              {otherText.trim() ? <tr><th>Other hazard</th><td>{otherText.trim()}</td></tr> : null}
               {note.trim() ? <tr><th>Note</th><td>{note.trim()}</td></tr> : null}
             </tbody>
           </table>

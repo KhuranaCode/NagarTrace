@@ -152,6 +152,7 @@ export function TopBar({ points }: { points?: number | null }) {
       <NavLink to="/records">Govt records</NavLink>
       {session ? <NavLink to="/app">My desk</NavLink> : null}
       {session ? <NavLink to="/leaderboard">Leaderboard</NavLink> : null}
+      {session ? <NavLink to="/app/settings">Profile</NavLink> : null}
       {!session ? <NavLink to="/login">Sign in</NavLink> : null}
     </>
   )
@@ -187,6 +188,7 @@ export function TopBar({ points }: { points?: number | null }) {
             <NavLink to="/report">Report a hazard</NavLink>
             {session ? <NavLink to="/app">My desk</NavLink> : <NavLink to="/login">Sign in</NavLink>}
             {session ? <NavLink to="/leaderboard">Leaderboard</NavLink> : null}
+            {session ? <NavLink to="/app/settings">Profile &amp; settings</NavLink> : null}
             {session ? <button className="menu-signout" onClick={() => { void signOut().then(() => nav('/')) }}>Sign out</button> : null}
           </nav>
         </div>
