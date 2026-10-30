@@ -1,6 +1,6 @@
 import { createClient, type Session } from '@supabase/supabase-js'
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './config'
+import { DEMO, SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './config'
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
 
@@ -23,6 +23,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false)
 
   useEffect(() => {
+    if (DEMO) {
+      setSession({
+        access_token: 'demo-token', token_type: 'bearer', expires_in: 86400,
+        expires_at: Math.floor(Date.now() / 1000) + 86400, refresh_token: 'demo-refresh',
+        user: { id: 'demo-user', aud: 'authenticated', role: 'authenticated', email: 'demo@nagartrace.invalid', app_metadata: {}, user_metadata: {}, identities: [], created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+      } as unknown as Session)
+      setReady(true)
+      return
+    }
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)
       setReady(true)
@@ -79,6 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export const useAuth = () => useContext(Ctx)
 
 export async function accessToken(): Promise<string | null> {
+  if (DEMO) return 'demo-token'
   const { data } = await supabase.auth.getSession()
   return data.session?.access_token ?? null
 }

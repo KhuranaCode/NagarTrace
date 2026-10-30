@@ -3,7 +3,7 @@
  * no edits to existing files; the integrator may fold these into src/api.ts and src/types.ts.
  * Mirrors api.ts conventions: bearer token from auth.tsx, ApiError shape, free-host network note.
  */
-import { API_BASE } from './config'
+import { API_BASE, DEMO } from './config'
 import { accessToken } from './auth'
 
 export interface StreakMilestone {
@@ -62,7 +62,25 @@ async function streakReq<T>(path: string, opts: { method?: string; body?: unknow
   return (await res.json()) as T
 }
 
+const DEMO_STREAKS: Streaks = {
+  timezone: 'Asia/Kolkata',
+  current_streak: 6,
+  longest_streak: 11,
+  streak_alive: true,
+  today_credited: true,
+  last_credited_date: new Date().toISOString().slice(0, 10),
+  credited_days: 14,
+  recent_days: Array.from({ length: 6 }, (_, i) => new Date(Date.now() - i * 86400e3).toISOString().slice(0, 10)),
+  milestones: [
+    { days: 3, earned: true },
+    { days: 7, earned: false },
+    { days: 30, earned: false },
+  ],
+  note: 'Demo build - simulated streak.',
+}
+
 export const streaksApi = {
-  get: () => streakReq<Streaks>('/v1/me/streaks'),
-  setTimezone: (timezone: string) => streakReq<Streaks>('/v1/me/streaks/timezone', { method: 'PATCH', body: { timezone } }),
+  get: () => (DEMO ? Promise.resolve(DEMO_STREAKS) : streakReq<Streaks>('/v1/me/streaks')),
+  setTimezone: (timezone: string) =>
+    DEMO ? Promise.resolve({ ...DEMO_STREAKS, timezone }) : streakReq<Streaks>('/v1/me/streaks/timezone', { method: 'PATCH', body: { timezone } }),
 }
