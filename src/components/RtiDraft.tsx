@@ -1,17 +1,20 @@
 import { useMemo, useState } from 'react'
-import type { IssueDetail } from '../types'
+import type { PublicIssue } from '../types'
 import { HAZARD_META } from '../ui'
 
 /** Draft-only RTI helper. Generates an EDITABLE draft seeking records/status about the
  *  report. Never files anything, never invents the authority or PIO - those stay as
  *  bracketed placeholders the user must verify and fill. Grounded in rtionline.gov.in
  *  guidelines (3000-char portal text limit, fee per RTI Rules 2012, 30-day timeline). */
-export default function RtiDraft({ d }: { d: IssueDetail }) {
+/** Minimal source a draft needs - the public, rounded view of a report is enough. */
+export type RtiSource = Pick<PublicIssue, 'id' | 'complaint_id' | 'hazard' | 'ward' | 'location' | 'created_at'>
+
+export default function RtiDraft({ d, roundedLocation = false }: { d: RtiSource; roundedLocation?: boolean }) {
   const [open, setOpen] = useState(false)
   const hazard = HAZARD_META[d.hazard]?.label ?? d.hazard
   const draft0 = useMemo(() => {
     const ref = d.complaint_id ?? `report ${d.id}`
-    const where = `latitude ${d.location.lat.toFixed(5)}, longitude ${d.location.lon.toFixed(5)}${d.ward ? `, ${d.ward}` : ''}`
+    const where = `latitude ${d.location.lat.toFixed(5)}, longitude ${d.location.lon.toFixed(5)}${roundedLocation ? ' (approximate - the public view rounds locations to about 11 m)' : ''}${d.ward ? `, ${d.ward}` : ''}`
     return `To,
 The Public Information Officer,
 [NAME OF PUBLIC AUTHORITY - verify: Municipal Corporation / Council for city roads, PWD for state highways, NHAI for national highways, Gram Panchayat/PMGSY for village roads]

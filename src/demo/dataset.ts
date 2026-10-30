@@ -22,12 +22,22 @@ const NOW = Date.now()
 
 export const DEMO_USER_ID = 'demo-user'
 
-const WARDS = [
-  { ward: '4', lat: 30.7046, lon: 76.7179 },
-  { ward: '9', lat: 30.711, lon: 76.733 },
-  { ward: '13', lat: 30.698, lon: 76.705 },
-  { ward: '21', lat: 30.679, lon: 76.724 },
-] as const
+// Plausible city-centre coordinates (well-known Indian cities); every report is
+// still synthetic - the places are real, the reports are not.
+const CITIES: { name: string; lat: number; lon: number; wards: string[]; weight: number }[] = [
+  { name: 'Mohali', lat: 30.7046, lon: 76.7179, wards: ['4', '9', '13', '21'], weight: 0.28 },
+  { name: 'Delhi', lat: 28.6139, lon: 77.209, wards: ['78', '91'], weight: 0.12 },
+  { name: 'Mumbai', lat: 19.076, lon: 72.8777, wards: ['87', '102'], weight: 0.12 },
+  { name: 'Bengaluru', lat: 12.9716, lon: 77.5946, wards: ['151', '172'], weight: 0.11 },
+  { name: 'Chennai', lat: 13.0827, lon: 80.2707, wards: ['118', '126'], weight: 0.09 },
+  { name: 'Kolkata', lat: 22.5726, lon: 88.3639, wards: ['63', '70'], weight: 0.09 },
+  { name: 'Hyderabad', lat: 17.385, lon: 78.4867, wards: ['44', '52'], weight: 0.08 },
+  { name: 'Pune', lat: 18.5204, lon: 73.8567, wards: ['35', '41'], weight: 0.06 },
+  { name: 'Jaipur', lat: 26.9124, lon: 75.7873, wards: ['27'], weight: 0.03 },
+  { name: 'Lucknow', lat: 26.8467, lon: 80.9462, wards: ['58'], weight: 0.02 },
+]
+const CITY_POOL = CITIES.flatMap((c) => Array.from({ length: Math.max(1, Math.round(c.weight * 50)) }, () => c))
+function pickCity() { return CITY_POOL[Math.floor(R() * CITY_POOL.length)] }
 
 const HAZARDS: Hazard[] = ['pothole', 'crack', 'waterlogging', 'broken_edge', 'missing_cover', 'other']
 const HAZARD_W = [0.38, 0.16, 0.15, 0.11, 0.1, 0.1]
@@ -56,7 +66,8 @@ export interface DemoIssue extends Issue { mine?: boolean; eventsList: EventItem
 
 export const DEMO_ISSUES: DemoIssue[] = Array.from({ length: 72 }, (_, i) => {
   const n = i + 1
-  const w = pick(WARDS)
+  const city = pickCity()
+  const w = { ward: pick(city.wards), lat: city.lat, lon: city.lon }
   const age = R() * 30
   const created = NOW - age * DAY
   const status = statusFor(age, R())

@@ -2,6 +2,7 @@ import L from 'leaflet'
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import type { OfficialRecords, Hazard, Status } from './types'
+import { DEMO } from './config'
 import { useAuth } from './auth'
 
 export const HAZARD_META: Record<Hazard, { label: string; icon: string }> = {
@@ -164,6 +165,7 @@ export function TopBar({ points }: { points?: number | null }) {
             <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" className="brand-logo" />
             <span>NagarTrace</span>
           </Link>
+          {DEMO ? <span className="demo-pill">Simulated data</span> : null}
           <nav className="topnav">{links}</nav>
           <div className="top-actions">
             {session && typeof points === 'number' ? <span className="points-chip" title="Your points">{points} pts</span> : null}

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { DEMO } from '../config'
 import { api, ApiError } from '../api'
 import { useAuth } from '../auth'
 import type { Hazard, ReportResult } from '../types'
@@ -250,7 +251,9 @@ export default function Report() {
       idemKey.current = crypto.randomUUID()
       if (r.photo) {
         setPhotoState('done')
-        setPhotoMsg(r.photo.location_ok ? 'Photo attached to this report.' : 'Photo attached, but it looks far from the report location and may not count as evidence.')
+        setPhotoMsg(DEMO
+          ? 'Demo preview - the photo stayed on this device; nothing was uploaded.'
+          : r.photo.location_ok ? 'Photo attached to this report.' : 'Photo attached, but it looks far from the report location and may not count as evidence.')
       } else {
         setPhotoState('idle')
         setPhotoMsg(null)
@@ -272,6 +275,8 @@ export default function Report() {
           <h1 style={{ marginTop: 0 }}>{result.replayed ? 'Report already received' : result.merged_into_existing ? 'Merged with a nearby report' : 'Report submitted'}</h1>
           {result.merged_into_existing && !result.replayed ? (
             <p>Someone already reported this {hazard ? HAZARD_META[hazard].label.toLowerCase() : 'hazard'} within about 30 m. Your report was added as a confirmation, which raises its priority.</p>
+          ) : DEMO ? (
+            <p>Demo preview - this report lives only in this browser session. It was not stored on any server, no officer will review it, and closing the tab removes it.</p>
           ) : (
             <p>Your report is in. A municipal officer verifies new reports before an owner and deadline are assigned.</p>
           )}

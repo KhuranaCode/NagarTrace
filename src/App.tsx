@@ -52,11 +52,6 @@ export default function App() {
 
   return (
     <div>
-      {DEMO ? (
-        <div className="warm-banner" role="note" style={{ background: '#fff1d6', color: '#7a4a00', fontWeight: 600 }}>
-          DEMO BUILD - simulated 30-day activity. Not real reports; nothing is saved or sent.
-        </div>
-      ) : null}
       {warming ? <div className="warm-banner">Waking up the server - the free tier sleeps when idle. First request can take about a minute.</div> : null}
       {oauthErr ? (
         <div className="warm-banner" role="alert" style={{ background: 'var(--red-soft)', color: 'var(--red)' }}>
