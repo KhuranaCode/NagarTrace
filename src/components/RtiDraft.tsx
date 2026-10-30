@@ -17,16 +17,18 @@ The Public Information Officer,
 [NAME OF PUBLIC AUTHORITY - verify: Municipal Corporation / Council for city roads, PWD for state highways, NHAI for national highways, Gram Panchayat/PMGSY for village roads]
 [ADDRESS OF THE AUTHORITY OFFICE]
 
-Subject: Application under Section 6(1) of the Right to Information Act, 2005 - records regarding road hazard complaint ${ref}
+Subject: Application under Section 6(1) of the Right to Information Act, 2005 - records regarding the condition and maintenance of the road at latitude ${d.location.lat.toFixed(5)}, longitude ${d.location.lon.toFixed(5)}${d.ward ? `, ${d.ward}` : ''}
 
 Sir/Madam,
 
-I reported a road hazard (${hazard}) at ${where} on ${d.created_at.slice(0, 10)}. It is registered as ${ref}. Under the RTI Act, 2005, I request the following records and information:
+I reported a road hazard (${hazard}) at the above location on ${d.created_at.slice(0, 10)}. My reference for this report is NagarTrace complaint number ${ref} - this is a NagarTrace-internal reference, NOT an acknowledgement from any government authority. No submission to your office is confirmed. [If you separately submitted this complaint to the authority and have an acknowledgement, add: "The complaint was also submitted to your office on <DATE>, acknowledgement <NUMBER>." Otherwise delete this bracket.]
 
-1. The current status of complaint ${ref} and all action taken on it so far, with dates.
-2. The name and designation of the officer(s) responsible for resolving it.
-3. The public authority and/or contractor responsible for maintenance of the road at the above location, with the relevant work order or contract reference.
-4. If the authority's records contain a sanctioned schedule, target date or work order covering the repair of this stretch, a copy of that record.
+Under the RTI Act, 2005, I request the following existing records and information:
+
+1. Which public authority and/or contractor is responsible for maintenance of the road at the above location, with the relevant work order or contract reference, as per your records.
+2. If a complaint about this hazard at this location has been received by your office through any channel, its current status and all action taken on it, with dates; if none has been received, please state so.
+3. The name and designation of the officer(s) responsible for maintenance and repair of this stretch, as per your records.
+4. If your records contain a sanctioned schedule, target date or work order covering repair of this stretch, a copy of that record.
 
 Application fee: Rs [10 for Central authorities / as per your State RTI Rules] paid by [IPO / court fee stamp / online payment - as accepted by the authority].
 
