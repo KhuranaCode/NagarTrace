@@ -12,6 +12,7 @@ import Privacy from './pages/Privacy'
 import PublicIssues from './pages/PublicIssues'
 import Records from './pages/Records'
 import Report from './pages/Report'
+import GmailCallback from './pages/GmailCallback'
 import Settings from './pages/Settings'
 import Updates from './pages/Updates'
 import { TopBar } from './ui'
@@ -69,6 +70,7 @@ export default function App() {
         <Route path="/app" element={<Dashboard />} />
         <Route path="/app/issues/:id" element={<IssueDetail />} />
         <Route path="/app/settings" element={<Settings />} />
+        <Route path="/gmail/callback" element={<GmailCallback />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/updates" element={<Updates />} />
         <Route path="/privacy" element={<Privacy />} />

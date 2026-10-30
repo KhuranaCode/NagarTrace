@@ -174,6 +174,14 @@ export const api = {
     req<{ kind: string; granted: boolean }>('/v1/me/mail-consent', { method: 'POST', body: { kind, granted, scope_version } }),
   followupCampaigns: (issueId: string) =>
     req<{ campaigns: FollowupCampaign[]; deliveries: FollowupDelivery[] }>(`/v1/issues/${issueId}/followup-campaigns`),
+  gmailStatus: () => req<{ connected: boolean; email?: string; scopes?: string; connected_at?: string }>('/v1/integrations/gmail/status'),
+  gmailStart: () => req<{ consent_url: string; state: string; code_verifier: string }>('/v1/integrations/gmail/start', { method: 'POST', body: {} }),
+  gmailCallback: (body: { state: string; code: string; code_verifier: string }) =>
+    req<{ connected: true; email: string }>('/v1/integrations/gmail/callback', { method: 'POST', body }),
+  gmailDisconnect: () => req<{ disconnected: true; google_revoked: boolean }>('/v1/integrations/gmail/disconnect', { method: 'POST', body: {} }),
+  sendAuthorityEmail: (issueId: string, body: { to: string; subject: string; body_text: string; idempotency_key: string }) =>
+    req<{ email_id: string; status: 'accepted' | 'failed' | 'unknown'; gmail_message_id: string | null; replayed?: boolean }>(`/v1/issues/${issueId}/authority-emails`, { method: 'POST', body }),
+
   createFollowupCampaign: (issueId: string, body: { audience: 'reporter' | 'authority'; recipient_descriptor: string; stages: FollowupStage[]; idempotency_key: string; recipient_email: string }) =>
     req<{ campaign_id: string; state: string; replayed?: boolean }>(`/v1/issues/${issueId}/followup-campaigns`, { method: 'POST', body }),
   deleteFollowupCampaign: (campaignId: string) =>

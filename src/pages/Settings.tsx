@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { api, ApiError } from '../api'
 import { useAuth } from '../auth'
+import GmailConnect from '../components/GmailConnect'
 import type { Me } from '../types'
 
 export default function Settings() {
@@ -84,6 +85,8 @@ export default function Settings() {
         <p style={{ margin: '12px 0 0' }}><span className="mono-label">Points</span><br />{me.points}</p>
         <p className="hint" style={{ marginTop: 12 }}>Points arrive only when activity is verified - signing in alone adds none.</p>
       </div>
+
+      <GmailConnect />
 
       <div className="card pad-lg" style={{ marginBottom: 18 }}>
         <h2 style={{ marginTop: 0 }}>Emails &amp; reminders</h2>

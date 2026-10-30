@@ -8,6 +8,7 @@ import { useAuth } from '../auth'
 import type { IssueDetail as Detail, Me } from '../types'
 import { Deadline, ErrorBox, fmtDate, HazardTag, MapView, OfficialRecordsBlock, Spinner, STATUS_META, StatusPill, SyntheticBadge } from '../ui'
 import RtiDraft from '../components/RtiDraft'
+import AuthorityEmail from '../components/AuthorityEmail'
 import Reminders from '../components/Reminders'
 
 const EVENT_LABELS: Record<string, string> = {
@@ -327,6 +328,7 @@ export default function IssueDetail() {
 
       {d.official_records ? <OfficialRecordsBlock rec={d.official_records} /> : null}
       <RtiDraft d={d} />
+      <AuthorityEmail d={d} />
 
       <div className="grid cols-2" style={{ marginTop: 16 }}>
         <div className="card">
