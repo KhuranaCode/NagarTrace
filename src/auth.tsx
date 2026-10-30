@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signUp = async (email: string, password: string) => {
-    const emailRedirectTo = import.meta.env.DEV ? 'http://localhost:3000/' : 'https://khuranacode.github.io/NagarTrace/'
+    const emailRedirectTo = import.meta.env.DEV ? 'http://localhost:3000/' : window.location.origin + import.meta.env.BASE_URL
     const { data, error } = await supabase.auth.signUp({ email, password, options: { emailRedirectTo } })
     if (error) return { error: error.message, needsConfirmation: false }
     // When email confirmation is enabled, no session is returned.
@@ -58,13 +58,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const resendConfirmation = async (email: string) => {
-    const emailRedirectTo = import.meta.env.DEV ? 'http://localhost:3000/' : 'https://khuranacode.github.io/NagarTrace/'
+    const emailRedirectTo = import.meta.env.DEV ? 'http://localhost:3000/' : window.location.origin + import.meta.env.BASE_URL
     const { error } = await supabase.auth.resend({ type: 'signup', email, options: { emailRedirectTo } })
     return error ? error.message : null
   }
 
   const signInWithGoogle = async () => {
-    const redirectTo = import.meta.env.DEV ? 'http://localhost:3000/' : 'https://khuranacode.github.io/NagarTrace/'
+    const redirectTo = import.meta.env.DEV ? 'http://localhost:3000/' : window.location.origin + import.meta.env.BASE_URL
     const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } })
     return error ? error.message : null
   }
