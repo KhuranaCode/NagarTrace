@@ -215,6 +215,16 @@ const realApi = {
       throw e
     }
   },
+  /** Contractor brief: summarizes NHAI award-registry rows for a contractor name. Historical candidates only. */
+  aiContractorBrief: async (contractorName: string): Promise<{ ai_available: true; found: boolean; reason?: string; brief: { summary: string; record_count: number; key_facts: string[]; model: string } | null; candidate_warning?: string } | AiUnavailable> => {
+    try {
+      return await req('/v1/ai/contractor-brief', { method: 'POST', body: { contractor_name: contractorName } })
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 503) return { ai_available: false, reason: e.code }
+      if (e instanceof ApiError && e.status === 404) return { ai_available: false, reason: 'not_live_yet' }
+      throw e
+    }
+  },
   /** Grievance email DRAFT: text the citizen reviews and sends themselves. The app never sends it. */
   aiEmailDraft: async (body: { hazard: string; note?: string; lat: number; lon: number; ward?: string; complaint_no?: string }): Promise<{ ai_available: true; subject: string; body: string; draft: true } | AiUnavailable> => {
     try {

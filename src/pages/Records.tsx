@@ -10,6 +10,24 @@ export default function Records() {
   const [err, setErr] = useState<unknown>(null)
   const [state, setState] = useState('')
   const [nh, setNh] = useState('')
+  const [cname, setCname] = useState('')
+  const [cbusy, setCbusy] = useState(false)
+  const [cresult, setCresult] = useState<{ kind: 'brief'; summary: string; record_count: number; key_facts: string[]; warning?: string } | { kind: 'note'; text: string } | null>(null)
+
+  const brief = async () => {
+    const q = cname.trim()
+    if (q.length < 2 || cbusy) return
+    setCbusy(true); setCresult(null)
+    try {
+      const r = await api.aiContractorBrief(q)
+      if (!r.ai_available) setCresult({ kind: 'note', text: r.reason === 'not_live_yet' ? 'The AI brief is not live on this server yet. The catalog filter above works without it.' : 'The AI brief is offline right now - it runs on the operator\'s own machine. The catalog filter above works without it.' })
+      else if (!r.found) setCresult({ kind: 'note', text: r.reason === 'registry_not_loaded' ? 'The award registry is not loaded on this deployment yet.' : 'No award records match that name in the FY2024-25 NHAI snapshot.' })
+      else if (r.brief) setCresult({ kind: 'brief', summary: r.brief.summary, record_count: r.brief.record_count, key_facts: r.brief.key_facts, warning: r.candidate_warning })
+      else setCresult({ kind: 'note', text: 'No brief was returned.' })
+    } catch (e: any) {
+      setCresult({ kind: 'note', text: e?.status === 401 ? 'Sign in to use the AI contractor brief.' : 'Could not reach the AI brief. Nothing was looked up.' })
+    } finally { setCbusy(false) }
+  }
 
   const load = (f: { state?: string; nh?: string } = {}) => {
     setErr(null)
@@ -44,6 +62,23 @@ export default function Records() {
             <label>National highway<br /><input value={nh} onChange={(e) => setNh(e.target.value)} placeholder="e.g. 44" /></label>
             <button className="btn" type="submit">Filter</button>
           </form>
+          <div className="card pad" style={{ marginTop: 12 }}>
+            <strong>AI contractor brief</strong>
+            <p className="field-hint">Summarizes this snapshot's award rows for a contractor name. Sign-in required; historical award candidates only - never proof of who caused or must fix a specific defect.</p>
+            <div className="action-row">
+              <input value={cname} maxLength={120} placeholder="Contractor name, e.g. from a record above" onChange={(e) => setCname(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') void brief() }} />
+              <button className="btn" disabled={cbusy || cname.trim().length < 2} onClick={() => void brief()}>{cbusy ? 'Checking...' : 'Brief'}</button>
+            </div>
+            {cresult?.kind === 'note' ? <p className="field-hint">{cresult.text}</p> : null}
+            {cresult?.kind === 'brief' ? (
+              <div style={{ marginTop: 8 }}>
+                {cresult.warning ? <p className="small-note">{cresult.warning}</p> : null}
+                <p style={{ margin: '6px 0' }}>{cresult.summary}</p>
+                <p className="muted" style={{ margin: '4px 0' }}>{cresult.record_count} record{cresult.record_count === 1 ? '' : 's'} summarized</p>
+                <ul style={{ margin: '4px 0' }}>{cresult.key_facts.map((f, i) => <li key={i}>{f}</li>)}</ul>
+              </div>
+            ) : null}
+          </div>
           <p className="muted" style={{ marginTop: 12 }}>{data.awards.length} record{data.awards.length === 1 ? '' : 's'}</p>
           {data.awards.map((a) => (
             <div className="card pad" key={a.sr} style={{ marginBottom: 10 }}>
