@@ -201,8 +201,10 @@ const realApi = {
     try {
       return await req<{ ai_available: true; advisory: Advisory }>('/v1/ai/report-check', { method: 'POST', body })
     } catch (e) {
-      if (e instanceof ApiError && e.status === 503) return { ai_available: false, reason: e.code }
+      if (e instanceof ApiError && e.status === 503) return { ai_available: false, reason: e.code !== 'error' ? e.code : 'http_503' }
       if (e instanceof ApiError && e.status === 403) return { ai_available: false, reason: e.code } // consent_required / ai_not_allowed
+      if (e instanceof ApiError && e.status === 0) return { ai_available: false, reason: 'network' } // transport failed before any HTTP response
+      if (e instanceof ApiError) return { ai_available: false, reason: `http_${e.status}` } // numeric status only, never the body
       // The deployed API may predate these routes: 404 = feature not live yet, say so honestly.
       if (e instanceof ApiError && e.status === 404) return { ai_available: false, reason: 'not_live_yet' }
       throw e
@@ -213,8 +215,10 @@ const realApi = {
     try {
       return await req<{ ai_available: true; reply: string; model: string }>('/v1/ai/chat', { method: 'POST', body: { message } })
     } catch (e) {
-      if (e instanceof ApiError && e.status === 503) return { ai_available: false, reason: e.code }
+      if (e instanceof ApiError && e.status === 503) return { ai_available: false, reason: e.code !== 'error' ? e.code : 'http_503' }
       if (e instanceof ApiError && e.status === 403) return { ai_available: false, reason: e.code } // consent_required / ai_not_allowed
+      if (e instanceof ApiError && e.status === 0) return { ai_available: false, reason: 'network' } // transport failed before any HTTP response
+      if (e instanceof ApiError) return { ai_available: false, reason: `http_${e.status}` } // numeric status only, never the body
       if (e instanceof ApiError && e.status === 404) return { ai_available: false, reason: 'not_live_yet' }
       throw e
     }

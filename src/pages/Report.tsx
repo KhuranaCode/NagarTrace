@@ -63,6 +63,8 @@ export default function Report() {
   const [aiState, setAiState] = useState<'idle' | 'checking' | 'done' | 'unavailable' | 'consent'>('idle')
   const [advisory, setAdvisory] = useState<Advisory | null>(null)
   const [aiReason, setAiReason] = useState<string | null>(null)
+  const AI_KNOWN_REASONS = ['not_configured', 'misconfigured', 'laptop_unreachable', 'timeout', 'bad_output', 'model_not_vision', 'busy', 'gateway_auth_refused', 'model_missing', 'ai_disabled', 'network', 'non_json']
+  const safeAiReason = (r: unknown) => (typeof r === 'string' && (AI_KNOWN_REASONS.includes(r) || /^http_\d{3}$/.test(r)) ? r : 'unknown')
 
   // Baseline for honest points feedback: we only ever show the measured delta.
   useEffect(() => {
@@ -124,7 +126,7 @@ export default function Report() {
       } else if (r.reason === 'consent_required') {
         setAiState('consent')
       } else {
-        setAiReason(r.reason)
+        setAiReason(safeAiReason(r.reason))
         setAiState('unavailable')
       }
     } catch {
