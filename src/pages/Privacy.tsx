@@ -15,7 +15,7 @@ export default function Privacy() {
       <ul>
         <li><strong>Public issue board:</strong> issue type, status, severity, ward, deadline and counts, with location rounded to about 11 metres. Never your identity, your photos or your notes.</li>
         <li><strong>Leaderboard (signed in):</strong> alias, ward and points only.</li>
-        <li><strong>Photos:</strong> visible only to the reporter/uploader, responsible organisation staff and assigned reviewers. Staff handling the issue see its exact location.</li>
+        <li><strong>Photos:</strong> visible only to the person who uploaded them and the platform owner. Staff, officers, contractors and reviewers do not get photo access in the current build. Non-owners see locations rounded, not exact.</li>
         <li><strong>Email address:</strong> never shown publicly.</li>
       </ul>
 
