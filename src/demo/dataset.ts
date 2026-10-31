@@ -35,6 +35,14 @@ const CITIES: { name: string; lat: number; lon: number; wards: string[]; weight:
   { name: 'Pune', lat: 18.5204, lon: 73.8567, wards: ['35', '41'], weight: 0.06 },
   { name: 'Jaipur', lat: 26.9124, lon: 75.7873, wards: ['27'], weight: 0.03 },
   { name: 'Lucknow', lat: 26.8467, lon: 80.9462, wards: ['58'], weight: 0.02 },
+  { name: 'Ahmedabad', lat: 23.0225, lon: 72.5714, wards: ['12'], weight: 0.03 },
+  { name: 'Kochi', lat: 9.9312, lon: 76.2673, wards: ['8'], weight: 0.02 },
+  { name: 'Bhopal', lat: 23.2599, lon: 77.4126, wards: ['19'], weight: 0.02 },
+  { name: 'Guwahati', lat: 26.1445, lon: 91.7362, wards: ['6'], weight: 0.02 },
+  { name: 'Indore', lat: 22.7196, lon: 75.8577, wards: ['33'], weight: 0.02 },
+  { name: 'Nagpur', lat: 21.1458, lon: 79.0882, wards: ['21'], weight: 0.02 },
+  { name: 'Patna', lat: 25.5941, lon: 85.1376, wards: ['41'], weight: 0.02 },
+  { name: 'Chandigarh', lat: 30.7333, lon: 76.7794, wards: ['7'], weight: 0.02 },
 ]
 const CITY_POOL = CITIES.flatMap((c) => Array.from({ length: Math.max(1, Math.round(c.weight * 50)) }, () => c))
 function pickCity() { return CITY_POOL[Math.floor(R() * CITY_POOL.length)] }
@@ -64,7 +72,7 @@ function statusFor(ageDays: number, r: number): Status {
 
 export interface DemoIssue extends Issue { mine?: boolean; eventsList: EventItem[] }
 
-export const DEMO_ISSUES: DemoIssue[] = Array.from({ length: 72 }, (_, i) => {
+export const DEMO_ISSUES: DemoIssue[] = Array.from({ length: 140 }, (_, i) => {
   const n = i + 1
   const city = pickCity()
   const w = { ward: pick(city.wards), lat: city.lat, lon: city.lon }

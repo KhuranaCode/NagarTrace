@@ -8,6 +8,36 @@ import { ApiError } from '../api'
 import type { Badges, Issue, IssueDetail, Me, PublicIssue, ReportResult } from '../types'
 import { DEMO_AWARDS, DEMO_ISSUES, DEMO_LEADERBOARD, DEMO_USER_ID, toIssue, toPublic, type DemoIssue } from './dataset'
 
+// Simulated assistant for the demo build. Every reply is a fixed SAMPLE labelled
+// as simulated - this build has no model and never classifies a real photo.
+const SIM_LABEL = 'Sample answer - simulated for this demo, not the live AI.'
+const SIM_MODEL = 'demo-simulation'
+
+function simAdvisory(hazard?: string) {
+  const h = (hazard || 'pothole').replace('_', ' ')
+  return {
+    ai_available: true as const,
+    advisory: {
+      summary: `${SIM_LABEL} The staged sample photo is consistent with a ${h} report. In the live app the assistant checks the actual photo against what you selected.`,
+      severity_hint: 'medium' as const,
+      suggested_hazard: hazard || 'pothole',
+      missing_details: ['Exact size or depth', 'Whether it affects pedestrians'],
+      model: SIM_MODEL,
+      advisory: true as const,
+    },
+  }
+}
+
+function simChat(message: string): string {
+  const q = message.toLowerCase()
+  if (/status|track|complaint/.test(q)) return `${SIM_LABEL} To track a report, open the issue from the map or the issues list - its timeline shows every stage from reported to fixed. The timelines in this demo are synthetic.`
+  if (/contractor|tender|award/.test(q)) return `${SIM_LABEL} The contractor page lists sample awarded road packages, all clearly marked synthetic. Real NHAI award search is on the live site, not in this demo build.`
+  if (/photo|picture|image/.test(q)) return `${SIM_LABEL} In the live app the assistant reviews your photo against the selected hazard and says when they do not match. This demo does not inspect photos; the mobile demo walkthrough shows both outcomes with sample scenarios.`
+  if (/email|draft|officer|write/.test(q)) return `${SIM_LABEL} The email draft tool prepares a formal complaint that you review and send yourself - the app never sends anything. A sample draft is available on this page.`
+  return `${SIM_LABEL} This assistant helps with reporting road hazards, tracking their status, contractor records and complaint drafts. Every reply in this demo build is a prepared sample.`
+}
+
+
 const delay = (ms = 180) => new Promise((r) => setTimeout(r, ms))
 const disabled = (what: string): never => {
   throw new ApiError(0, 'demo', `Demo build - ${what} is disabled. Simulated data only; nothing is saved or sent anywhere.`)
@@ -26,15 +56,38 @@ function detail(d: DemoIssue): IssueDetail {
 
 export const demoApi = {
   // No AI in the demo: honest unavailable, never a fabricated suggestion.
-  aiStatus: async () => { await delay(30); return { configured: false, available: false, reason: 'demo' } },
-  aiReportCheck: async () => { await delay(30); return { ai_available: false as const, reason: 'demo' } },
-  aiChat: async () => { await delay(30); return { ai_available: false as const, reason: 'demo' } },
-  aiConsentNotice: async () => { await delay(10); return { version: 'demo', text: 'Demo build: no AI processing happens.', features: [] as ('guide_chat' | 'email_draft' | 'report_check' | 'photo_advisory' | 'contractor_finder')[] } },
+  aiStatus: async () => { await delay(30); return { configured: true, available: true, model: SIM_MODEL, reason: 'demo build - simulated answers' } },
+  aiReportCheck: async (body: { hazard: string }) => { await delay(400); return simAdvisory(body.hazard) },
+  aiChat: async (message: string) => { await delay(600); return { ai_available: true as const, reply: simChat(message), model: SIM_MODEL } },
+  aiConsentNotice: async () => { await delay(10); return { version: 'demo-sim-2026-10-31', text: 'Demo build: assistant answers are fixed SAMPLES labelled as simulated. No photo, note or message leaves this browser; nothing is sent to any server or model.', features: ['guide_chat', 'email_draft', 'report_check', 'contractor_finder'] as ('guide_chat' | 'email_draft' | 'report_check' | 'photo_advisory' | 'contractor_finder')[] } },
   aiConsents: async () => { await delay(10); return { notice_version: 'demo', consents: [] } },
   aiGrantConsent: async () => { await delay(10); return { ok: true as const } },
   aiRevokeConsent: async () => { await delay(10); return { ok: true as const } },
-  aiEmailDraft: async () => { await delay(30); return { ai_available: false as const, reason: 'demo' } },
-  aiContractorBrief: async () => { await delay(30); return { ai_available: false as const, reason: 'demo' } },
+  aiEmailDraft: async (body: { hazard: string; ward?: string; complaint_no?: string }) => {
+    await delay(500)
+    return {
+      ai_available: true as const,
+      subject: `Complaint: ${body.hazard.replace('_', ' ')}${body.ward ? ' in Ward ' + body.ward : ''} - sample draft (simulated)`,
+      body: `${SIM_LABEL}\n\nTo the concerned officer,\n\nI am reporting a ${body.hazard.replace('_', ' ')}${body.ward ? ' in Ward ' + body.ward : ''}. This sample shows the format the live assistant prepares from a report. Replace the bracketed parts before sending: [exact location], [since when], [photo reference].\n\nRegards,\n[Your name]`,
+      draft: true as const,
+    }
+  },
+  aiContractorBrief: async (contractorName: string) => {
+    await delay(500)
+    if (!contractorName.toLowerCase().includes('demo')) {
+      return { ai_available: true as const, found: false, reason: 'demo build: only the synthetic sample contractors exist here - try "Demo Construction Co"', brief: null }
+    }
+    return {
+      ai_available: true as const,
+      found: true,
+      brief: {
+        summary: `${SIM_LABEL} Demo Construction Co (synthetic) appears in the sample awards table with 6 synthetic highway packages. These rows are fabricated for this demo and are not NHAI records.`,
+        record_count: 6,
+        key_facts: ['6 synthetic sample packages (not real awards)', 'Stages shown: under construction / awarded / completed', 'For real data use the live site contractor search against NHAI records'],
+        model: SIM_MODEL,
+      },
+    }
+  },
 
   health: async () => { await delay(60); return { ok: true, verification_mode: 'demo', unrouted_triage: 'demo', policy: 'demo build - synthetic 30-day activity' } },
   me: async (): Promise<Me> => { await delay(); return { id: DEMO_USER_ID, alias: 'demo-visitor', ward: '9', points: 64, created_at: new Date(Date.now() - 21 * 86400e3).toISOString(), memberships: [] } },
