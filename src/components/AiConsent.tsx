@@ -4,7 +4,8 @@ import { AiFeature, api } from '../api'
 export const AI_FEATURE_LABEL: Record<AiFeature, string> = {
   guide_chat: 'App guide chat',
   email_draft: 'Grievance email draft',
-  photo_advisory: 'Photo / report check',
+  report_check: 'Report check (typed details)',
+  photo_advisory: 'Photo check (sends the photo)',
   contractor_finder: 'Contractor brief',
 }
 
@@ -29,9 +30,10 @@ export function AiConsentGate({ feature, onGranted }: { feature: AiFeature; onGr
   }
   return (
     <div className="notice-box" style={{ marginTop: 8 }}>
-      <strong>Before {AI_FEATURE_LABEL[feature]} runs</strong>
-      <p className="field-hint">This feature processes your input on the operator's own computer. Read the notice, then choose:</p>
+      <strong>Before "{AI_FEATURE_LABEL[feature]}" runs</strong>
+      <p className="field-hint">You are enabling this ONE feature only. It processes your input on the operator's own computer. Read the notice, then choose:</p>
       {notice ? <p className="field-hint" style={{ whiteSpace: 'pre-wrap' }}>{notice.text}</p> : <p className="field-hint">Loading notice...</p>}
+      {notice ? <p className="field-hint">Consent notice version: {notice.version}</p> : null}
       {err ? <p className="field-hint">{err}</p> : null}
       <div className="action-row" style={{ marginTop: 6 }}>
         <button className="btn" disabled={!notice || busy} onClick={() => void accept()}>{busy ? 'Saving...' : 'I understand, enable this feature'}</button>

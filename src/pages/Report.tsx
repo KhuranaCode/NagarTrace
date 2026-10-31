@@ -444,7 +444,7 @@ export default function Report() {
             ) : null}
             {aiState === 'checking' ? <p className="small-note" style={{ marginBottom: 0 }}>Checking… (can take up to about 25 seconds)</p> : null}
             {aiState === 'consent' ? (
-              <AiConsentGate feature="photo_advisory" onGranted={() => setAiState('idle')} />
+              <AiConsentGate feature="report_check" onGranted={() => setAiState('idle')} />
             ) : null}
             {aiState === 'unavailable' ? (
               <p className="small-note" style={{ marginBottom: 0 }}>AI check is offline right now{aiReason ? ` (${aiReason.replace(/_/g, ' ')})` : ''}. Your report is unaffected - you can send it normally. <button className="btn ghost" style={{ marginLeft: 6 }} onClick={runAiCheck}>Retry</button></p>

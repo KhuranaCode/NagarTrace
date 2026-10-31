@@ -66,7 +66,7 @@ export interface Advisory {
 }
 /** 503 body when the owner laptop is offline: never a fabricated suggestion. */
 export interface AiUnavailable { ai_available: false; reason: string }
-export type AiFeature = 'guide_chat' | 'email_draft' | 'photo_advisory' | 'contractor_finder'
+export type AiFeature = 'guide_chat' | 'email_draft' | 'report_check' | 'photo_advisory' | 'contractor_finder'
 
 const realApi = {
   health: () => req<Health>('/health', { auth: false }),
