@@ -36,6 +36,7 @@ async function req<T>(path: string, opts: { method?: string; body?: unknown; hea
     try {
       const j = await res.json()
       if (j?.error) code = j.error
+      else if (j?.ai_available === false && typeof j?.reason === 'string') code = j.reason // AI 503s carry { ai_available, reason }, not { error }
       if (j?.message) message = j.message
     } catch { /* keep defaults */ }
     throw new ApiError(res.status, code, message)
