@@ -66,6 +66,7 @@ export interface Advisory {
 }
 /** 503 body when the owner laptop is offline: never a fabricated suggestion. */
 export interface AiUnavailable { ai_available: false; reason: string }
+export type AiFeature = 'guide_chat' | 'email_draft' | 'photo_advisory' | 'contractor_finder'
 
 const realApi = {
   health: () => req<Health>('/health', { auth: false }),
@@ -200,6 +201,7 @@ const realApi = {
       return await req<{ ai_available: true; advisory: Advisory }>('/v1/ai/report-check', { method: 'POST', body })
     } catch (e) {
       if (e instanceof ApiError && e.status === 503) return { ai_available: false, reason: e.code }
+      if (e instanceof ApiError && e.status === 403) return { ai_available: false, reason: e.code } // consent_required / ai_not_allowed
       // The deployed API may predate these routes: 404 = feature not live yet, say so honestly.
       if (e instanceof ApiError && e.status === 404) return { ai_available: false, reason: 'not_live_yet' }
       throw e
@@ -211,6 +213,7 @@ const realApi = {
       return await req<{ ai_available: true; reply: string; model: string }>('/v1/ai/chat', { method: 'POST', body: { message } })
     } catch (e) {
       if (e instanceof ApiError && e.status === 503) return { ai_available: false, reason: e.code }
+      if (e instanceof ApiError && e.status === 403) return { ai_available: false, reason: e.code } // consent_required / ai_not_allowed
       if (e instanceof ApiError && e.status === 404) return { ai_available: false, reason: 'not_live_yet' }
       throw e
     }
@@ -221,6 +224,7 @@ const realApi = {
       return await req('/v1/ai/contractor-brief', { method: 'POST', body: { contractor_name: contractorName } })
     } catch (e) {
       if (e instanceof ApiError && e.status === 503) return { ai_available: false, reason: e.code }
+      if (e instanceof ApiError && e.status === 403) return { ai_available: false, reason: e.code } // consent_required / ai_not_allowed
       if (e instanceof ApiError && e.status === 404) return { ai_available: false, reason: 'not_live_yet' }
       throw e
     }
@@ -232,10 +236,18 @@ const realApi = {
       return { ai_available: true, ...r }
     } catch (e) {
       if (e instanceof ApiError && e.status === 503) return { ai_available: false, reason: e.code }
+      if (e instanceof ApiError && e.status === 403) return { ai_available: false, reason: e.code } // consent_required / ai_not_allowed
       if (e instanceof ApiError && e.status === 404) return { ai_available: false, reason: 'not_live_yet' }
       throw e
     }
   },
+  /** AI consent: versioned notice, per-feature grant/revoke (server enforces before any processing). */
+  aiConsentNotice: () => req<{ version: string; text: string; features: AiFeature[] }>('/v1/ai/consent-notice'),
+  aiConsents: () => req<{ notice_version: string; consents: { feature: AiFeature; notice_version: string; granted_at: string; revoked_at: string | null }[] }>('/v1/ai/consents'),
+  aiGrantConsent: (feature: AiFeature, notice_version: string) =>
+    req<{ ok: true }>('/v1/ai/consents', { method: 'POST', body: { feature, notice_version } }),
+  aiRevokeConsent: (feature: AiFeature) =>
+    req<{ ok: true }>('/v1/ai/consents/revoke', { method: 'POST', body: { feature } }),
 }
 
 export type Api = typeof realApi

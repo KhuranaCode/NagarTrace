@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { api, ApiError } from '../api'
 import { useAuth } from '../auth'
 import type { Me } from '../types'
+import { AiConsentList } from '../components/AiConsent'
 
 export default function Settings() {
   const { session, ready, signOut } = useAuth()
@@ -96,6 +97,14 @@ export default function Settings() {
           to your Gmail or any other mailbox - that would be a separate consent you can refuse.
         </p>
         <p className="hint" style={{ margin: 0 }}>Status: email not available yet. There is nothing to turn on or off.</p>
+      </div>
+
+      <div className="card pad-lg" style={{ marginBottom: 18 }}>
+        <h2 style={{ marginTop: 0 }}>AI features</h2>
+        <p className="muted" style={{ marginBottom: 10 }}>
+          AI features process only the exact input of the feature you use, on the operator's own computer - never your account or other reports. Each one asks first; revoking here stops new processing immediately.
+        </p>
+        <AiConsentList />
       </div>
 
       <div className="card pad-lg">
