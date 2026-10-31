@@ -50,14 +50,12 @@ export default function Home() {
       <section className="hero">
         <div className="container hero-inner">
           <span className="hero-eyebrow">Civic tech · From report to confirmed repair</span>
-          <h1>Report the pothole. Reach who must fix it.</h1>
+          <h1>
+            Report the{' '}<img className="h1-chip" src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="" aria-hidden="true" />{' '}pothole.
+            <br />Reach who must fix it.
+          </h1>
           <div className="dash-strip" aria-hidden="true" />
-          <p className="lede lede-full">
-            Complaints vanish into city offices. NagarTrace is built to route each verified report to the accountable
-            party - the contractor under warranty, the utility that dug the cut, or the municipality - then tracks
-            the deadline and whether the repair is confirmed.
-          </p>
-          <p className="lede lede-short">
+          <p className="lede">
             NagarTrace routes each verified report to the accountable party and tracks the deadline to a confirmed repair.
           </p>
           <div className="hero-cta">
@@ -88,36 +86,15 @@ export default function Home() {
             <figure key="b-7"><img src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="A rain-soaked rural road filled with waterlogged potholes" loading="lazy" /></figure>
           </div>
         </div>
+        <p className="photo-credit hero-photo-credit">
+          Illustrative photos from Wikimedia Commons, not complaints filed here:
+          {' '}<a href="https://commons.wikimedia.org/wiki/File:Broken_Roads_in_India%27s_Capital_New_Delhi.jpg" target="_blank" rel="noreferrer">Rrthakur22</a>,{' '}
+          <a href="https://commons.wikimedia.org/wiki/File:Potholes_on_road.jpg" target="_blank" rel="noreferrer">KEmel49</a>,{' '}
+          <a href="https://commons.wikimedia.org/wiki/File:Roads_deformed_T_munnekollala_Bengaluru.jpg" target="_blank" rel="noreferrer">Gangaasoonu</a> - CC BY-SA 4.0.
+        </p>
       </section>
 
-      <section className="section" style={{ paddingTop: 26, paddingBottom: 0 }}>
-        <div className="container">
-          <div className="photo-strip reveal">
-            <figure>
-              <img src={`${import.meta.env.BASE_URL}photos/broken-road-delhi.jpg`} alt="A deep open pothole breaking through a city road surface" loading="lazy" />
-              <figcaption>
-                <a href="https://commons.wikimedia.org/wiki/File:Broken_Roads_in_India%27s_Capital_New_Delhi.jpg" target="_blank" rel="noreferrer">Photo: Rrthakur22, CC BY-SA 4.0</a>
-              </figcaption>
-            </figure>
-            <figure>
-              <img src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="A rain-soaked rural road filled with waterlogged potholes" loading="lazy" />
-              <figcaption>
-                <a href="https://commons.wikimedia.org/wiki/File:Potholes_on_road.jpg" target="_blank" rel="noreferrer">Photo: KEmel49, CC BY-SA 4.0</a>
-              </figcaption>
-            </figure>
-            <figure>
-              <img src={`${import.meta.env.BASE_URL}photos/deformed-road-bengaluru.jpg`} alt="Deformed, cracked asphalt on an urban street" loading="lazy" />
-              <figcaption>
-                <a href="https://commons.wikimedia.org/wiki/File:Roads_deformed_T_munnekollala_Bengaluru.jpg" target="_blank" rel="noreferrer">Photo: Gangaasoonu, CC BY-SA 4.0</a>
-              </figcaption>
-            </figure>
-          </div>
-          <p className="photo-credit">
-            These are the roads this is for. Illustrative photos from Wikimedia Commons, not complaints filed here.
-          </p>
-        </div>
-      </section>
-
+      
       <section className="section" style={{ paddingTop: 26 }}>
         <div className="container">
           {issues ? (
