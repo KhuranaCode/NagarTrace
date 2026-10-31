@@ -124,7 +124,7 @@ a { color: var(--blue); }
 
 /* ---------- hero (light, minimal) ---------- */
 .hero {
-  position: relative; margin-top: -84px; padding: 150px 0 60px;
+  position: relative; margin-top: -84px; padding: 140px 0 0;
   background: var(--paper);
   background-image:
     linear-gradient(rgba(23, 23, 23, 0.035) 1px, transparent 1px),
@@ -140,9 +140,24 @@ a { color: var(--blue); }
   border: 1px solid var(--line); border-radius: 999px; padding: 7px 14px; background: #fff; margin-bottom: 20px;
 }
 .hero h1 {
-  font-family: var(--display); font-weight: 600; text-transform: uppercase;
-  font-size: clamp(2.6rem, 6vw, 4.6rem); line-height: 0.98; letter-spacing: -0.01em;
+  font-family: 'Fraunces', Georgia, 'Times New Roman', serif; font-weight: 600; text-transform: none;
+  font-size: clamp(2.7rem, 6.2vw, 4.9rem); line-height: 1.04; letter-spacing: -0.015em;
   margin: 0 0 14px; color: var(--ink);
+}
+.hero-inner { max-width: 860px; margin: 0 auto; text-align: center; display: flex; flex-direction: column; align-items: center; }
+.hero p.lede { margin-left: auto; margin-right: auto; }
+.hero-cta { justify-content: center; }
+.hero .dash-strip { margin: 6px auto 22px; }
+.hero .demo-strip { margin: 18px auto 0; max-width: 620px; text-align: left; }
+.hero-marquee { margin-top: 38px; overflow: hidden; }
+.marquee-track { display: flex; gap: 16px; width: max-content; animation: marquee 42s linear infinite; }
+.hero-marquee:hover .marquee-track { animation-play-state: paused; }
+.marquee-track figure { flex: 0 0 auto; width: 280px; height: 190px; border-radius: 18px; overflow: hidden; margin: 0; border: 1px solid var(--line, #e3ddd2); }
+.marquee-track img { width: 100%; height: 100%; object-fit: cover; display: block; filter: grayscale(1); }
+@keyframes marquee { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .marquee-track { animation: none; } }
+@media (max-width: 720px) {
+  .marquee-track figure { width: 210px; height: 145px; border-radius: 14px; }
 }
 .dash-strip {
   height: 12px; width: min(280px, 60%); border-radius: 3px; margin: 6px 0 24px;

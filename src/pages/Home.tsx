@@ -4,7 +4,7 @@ import { api } from '../api'
 import Counters from '../components/Counters'
 import { DEMO } from '../config'
 import type { PublicIssue } from '../types'
-import { Deadline, Empty, ErrorBox, HazardTag, IndiaMap, Spinner, StatusPill, SyntheticBadge } from '../ui'
+import { Empty, ErrorBox, IndiaMap, Spinner } from '../ui'
 import { IssueCard } from './shared'
 
 const STEPS = [
@@ -48,61 +48,44 @@ export default function Home() {
   return (
     <div>
       <section className="hero">
-        <div className="container hero-grid">
-          <div>
-            <span className="hero-eyebrow">Civic tech · From report to confirmed repair</span>
-            <h1>Report the pothole. Reach who must fix it.</h1>
-            <div className="dash-strip" aria-hidden="true" />
-            <p className="lede lede-full">
-              Complaints vanish into city offices. NagarTrace is built to route each verified report to the accountable
-              party - the contractor under warranty, the utility that dug the cut, or the municipality - then tracks
-              the deadline and whether the repair is confirmed.
-            </p>
-            <p className="lede lede-short">
-              NagarTrace routes each verified report to the accountable party and tracks the deadline to a confirmed repair.
-            </p>
-            <div className="hero-cta">
-              <Link to="/report" className="btn dark">Report a hazard →</Link>
-              <Link to="/issues" className="btn ghost">{DEMO ? 'See sample issues' : 'See live issues'}</Link>
-            </div>
-            <ul className="hero-feats reveal-stagger">
-              <li>Location and time captured with the report</li>
-              <li>Photos stay private to the issue's participants</li>
-              <li>An officer verifies before anyone is assigned</li>
-            </ul>
-            <div className="demo-strip">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M9 3h6M10 3v6.5L4.8 19a2 2 0 0 0 1.8 3h10.8a2 2 0 0 0 1.8-3L14 9.5V3" /></svg> Not connected to any municipal system yet. Complaints stay in this app until a real authority is on board.
-            </div>
+        <div className="container hero-inner">
+          <span className="hero-eyebrow">Civic tech · From report to confirmed repair</span>
+          <h1>Report the pothole. Reach who must fix it.</h1>
+          <div className="dash-strip" aria-hidden="true" />
+          <p className="lede lede-full">
+            Complaints vanish into city offices. NagarTrace is built to route each verified report to the accountable
+            party - the contractor under warranty, the utility that dug the cut, or the municipality - then tracks
+            the deadline and whether the repair is confirmed.
+          </p>
+          <p className="lede lede-short">
+            NagarTrace routes each verified report to the accountable party and tracks the deadline to a confirmed repair.
+          </p>
+          <div className="hero-cta">
+            <Link to="/report" className="btn dark">Report a hazard →</Link>
+            <Link to="/issues" className="btn ghost">{DEMO ? 'See sample issues' : 'See live issues'}</Link>
           </div>
-          <div className="record-card">
-            <div className="record-head">
-              <span className="mono-label">Live record</span>
-              <span className="vis-pill public">Public</span>
-            </div>
-            {err ? <p className="small-note">Live data unavailable right now.</p> : null}
-            {!issues && !err ? <Spinner label="Loading the public record." /> : null}
-            {issues ? (
-              issues.length === 0 ? (
-                <p className="small-note">No reports yet. Be the first.</p>
-              ) : (
-                <>
-                  {[...issues].sort((a, b) => b.updated_at.localeCompare(a.updated_at)).slice(0, 3).map((i) => (
-                    <Link key={i.id} to={`/issues/${i.id}`} className="record-row">
-                      <div className="record-row-top">
-                        <HazardTag hazard={i.hazard} hazards={i.hazards} />
-                        <StatusPill status={i.status} />
-                      </div>
-                      <div className="issue-meta">
-                        {i.ward ? <span>Ward {i.ward}</span> : null}
-                        <Deadline iso={i.deadline_at} />
-                        {i.responsible?.synthetic_data ? <SyntheticBadge /> : null}
-                      </div>
-                    </Link>
-                  ))}
-                  <Link to="/issues" className="record-all">See all {issues.length} public issues →</Link>
-                </>
-              )
-            ) : null}
+          <div className="demo-strip">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M9 3h6M10 3v6.5L4.8 19a2 2 0 0 0 1.8 3h10.8a2 2 0 0 0 1.8-3L14 9.5V3" /></svg> Not connected to any municipal system yet. Complaints stay in this app until a real authority is on board.
+          </div>
+        </div>
+        <div className="hero-marquee">
+          <div className="marquee-track">
+            <figure key="a-0"><img src={`${import.meta.env.BASE_URL}photos/broken-road-delhi.jpg`} alt="A deep open pothole breaking through a city road surface" loading="lazy" /></figure>
+            <figure key="a-1"><img src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="A rain-soaked rural road filled with waterlogged potholes" loading="lazy" /></figure>
+            <figure key="a-2"><img src={`${import.meta.env.BASE_URL}photos/deformed-road-bengaluru.jpg`} alt="Deformed, cracked asphalt on an urban street" loading="lazy" /></figure>
+            <figure key="a-3"><img src={`${import.meta.env.BASE_URL}photos/broken-road-delhi.jpg`} alt="A deep open pothole breaking through a city road surface" loading="lazy" /></figure>
+            <figure key="a-4"><img src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="A rain-soaked rural road filled with waterlogged potholes" loading="lazy" /></figure>
+            <figure key="a-5"><img src={`${import.meta.env.BASE_URL}photos/deformed-road-bengaluru.jpg`} alt="Deformed, cracked asphalt on an urban street" loading="lazy" /></figure>
+            <figure key="a-6"><img src={`${import.meta.env.BASE_URL}photos/broken-road-delhi.jpg`} alt="A deep open pothole breaking through a city road surface" loading="lazy" /></figure>
+            <figure key="a-7"><img src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="A rain-soaked rural road filled with waterlogged potholes" loading="lazy" /></figure>
+            <figure key="b-0"><img src={`${import.meta.env.BASE_URL}photos/broken-road-delhi.jpg`} alt="A deep open pothole breaking through a city road surface" loading="lazy" /></figure>
+            <figure key="b-1"><img src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="A rain-soaked rural road filled with waterlogged potholes" loading="lazy" /></figure>
+            <figure key="b-2"><img src={`${import.meta.env.BASE_URL}photos/deformed-road-bengaluru.jpg`} alt="Deformed, cracked asphalt on an urban street" loading="lazy" /></figure>
+            <figure key="b-3"><img src={`${import.meta.env.BASE_URL}photos/broken-road-delhi.jpg`} alt="A deep open pothole breaking through a city road surface" loading="lazy" /></figure>
+            <figure key="b-4"><img src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="A rain-soaked rural road filled with waterlogged potholes" loading="lazy" /></figure>
+            <figure key="b-5"><img src={`${import.meta.env.BASE_URL}photos/deformed-road-bengaluru.jpg`} alt="Deformed, cracked asphalt on an urban street" loading="lazy" /></figure>
+            <figure key="b-6"><img src={`${import.meta.env.BASE_URL}photos/broken-road-delhi.jpg`} alt="A deep open pothole breaking through a city road surface" loading="lazy" /></figure>
+            <figure key="b-7"><img src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="A rain-soaked rural road filled with waterlogged potholes" loading="lazy" /></figure>
           </div>
         </div>
       </section>
