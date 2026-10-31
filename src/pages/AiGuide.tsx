@@ -26,7 +26,11 @@ export default function AiGuide() {
       const r = await api.aiChat(q)
       if (r.ai_available) setMsgs((m) => [...m, { role: 'guide', text: r.reply }])
       else if (r.reason === 'consent_required') { setMsgs((m) => m.slice(0, -1)); setConsentNeeded(true) }
-      else setOffline(r.reason === 'not_live_yet' ? 'The guide is not live on this server yet.' : r.reason === 'ai_not_allowed' ? 'AI features are not enabled for this account.' : 'The guide is offline right now - it runs on the operator\'s own machine. Try again later.')
+      else {
+        const KNOWN = ['not_configured', 'misconfigured', 'laptop_unreachable', 'timeout', 'bad_output', 'model_not_vision', 'busy', 'gateway_auth_refused', 'model_missing', 'ai_disabled']
+        const code = typeof r.reason === 'string' && KNOWN.includes(r.reason) ? r.reason : 'unknown'
+        setOffline((r.reason === 'not_live_yet' ? 'The guide is not live on this server yet.' : r.reason === 'ai_not_allowed' ? 'AI features are not enabled for this account.' : 'The guide is offline right now - it runs on the operator\'s own machine. Try again later.') + ` [code: ${code}]`)
+      }
     } catch {
       setOffline('Could not reach the guide. Your question was not processed.')
     } finally { setBusy(false) }
