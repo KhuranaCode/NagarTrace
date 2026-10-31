@@ -4,6 +4,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import type { OfficialRecords, Hazard, Status } from './types'
 import { DEMO } from './config'
 import { useAuth } from './auth'
+import { INDIA_BOUNDARY } from './india-boundary'
 
 export const HAZARD_META: Record<Hazard, { label: string; icon: string }> = {
   pothole: { label: 'Pothole', icon: 'pothole' },
@@ -203,7 +204,21 @@ export interface MapPin {
   lon: number
   status: Status
   label: string
+  /** Optional PUBLIC-SAFE details for the hover card. Only fields already public on the
+   *  issues list belong here - never notes, photos, or reporter identity. */
+  hazard?: Hazard
+  ward?: string | null
+  created_at?: string
+  reports_count?: number
 }
+
+const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+const TILE_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+// India-framed default: state boundaries and state names are legible at this zoom.
+// It is a regional frame, not the full extent - the Fit India control shows everything.
+const INDIA_VIEW: L.LatLngExpression = [23.5, 79.5]
+const INDIA_ZOOM = 5
+const INDIA_EXTENT = L.latLngBounds([6.6, 68.0], [37.3, 97.6])
 
 const PIN_COLORS: Record<Status, string> = {
   reported: '#f59e0b',
@@ -219,20 +234,52 @@ const PIN_COLORS: Record<Status, string> = {
 export function MapView({ pins, height = 380, onSelect }: { pins: MapPin[]; height?: number; onSelect?: (id: string) => void }) {
   const ref = useRef<HTMLDivElement>(null)
   const mapRef = useRef<L.Map | null>(null)
+  const frameKeyRef = useRef<string>('')
   const layerRef = useRef<L.LayerGroup | null>(null)
 
   useEffect(() => {
     if (!ref.current || mapRef.current) return
-    const map = L.map(ref.current, { scrollWheelZoom: false }).setView([30.3398, 76.3869], 13)
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    // Political base map: OSM standard tiles render country/state boundaries and place
+    // labels. No paid tile service. Small-site browser use is compatible with the OSM
+    // tile usage policy (https://operations.osmfoundation.org/policies/tiles/): the
+    // browser sends Referer and honours cache headers, we never prefetch or bulk-load,
+    // and the required attribution stays visible on the map. TILE_URL is a constant so
+    // the basemap can be switched without touching call sites.
+    const map = L.map(ref.current, {
+      scrollWheelZoom: false,
+      minZoom: 3,
+      maxBounds: L.latLngBounds([4, 62], [40, 101]),
+    }).setView(INDIA_VIEW, INDIA_ZOOM)
+    L.tileLayer(TILE_URL, {
+      attribution: TILE_ATTRIBUTION,
       maxZoom: 19,
     }).addTo(map)
+    // India's official claimed external boundary, drawn over the basemap: OSM tiles show
+    // de-facto control lines in Kashmir, while the earlier schematic map deliberately
+    // depicted the claimed boundary - keep that presentation.
+    L.polyline(INDIA_BOUNDARY, {
+      color: '#0e1b2c', weight: 1.4, opacity: 0.5, interactive: false,
+      attribution: 'Boundary: <a href="https://github.com/datameet/maps">DataMeet</a> (CC BY 4.0)',
+    }).addTo(map)
+    // The default view frames central India so state names stay legible; this control
+    // zooms out to the full claimed extent (incl. Kashmir/Ladakh and Kanyakumari).
+    const fitControl = new L.Control({ position: 'topright' })
+    fitControl.onAdd = () => {
+      const btn = L.DomUtil.create('button', 'fit-india-btn')
+      btn.type = 'button'
+      btn.textContent = 'Fit India'
+      btn.title = 'Zoom out to the full map of India'
+      L.DomEvent.disableClickPropagation(btn)
+      L.DomEvent.on(btn, 'click', () => map.fitBounds(INDIA_EXTENT, { padding: [10, 10] }))
+      return btn
+    }
+    fitControl.addTo(map)
     layerRef.current = L.layerGroup().addTo(map)
     mapRef.current = map
     return () => {
       map.remove()
       mapRef.current = null
+      frameKeyRef.current = ''
     }
   }, [])
 
@@ -242,20 +289,138 @@ export function MapView({ pins, height = 380, onSelect }: { pins: MapPin[]; heig
     if (!map || !layer) return
     layer.clearLayers()
     const pts: L.LatLngExpression[] = []
-    for (const p of pins) {
-      const m = L.circleMarker([p.lat, p.lon], {
-        radius: 9,
-        color: '#fff',
-        weight: 2,
-        fillColor: PIN_COLORS[p.status] ?? '#0e1b2c',
-        fillOpacity: 0.95,
+    // Touch screens have no hover: first tap on a dot opens its detail card, the second
+    // tap (or the card's own button) opens the issue. Pointer devices hover for the card.
+    const touch = window.matchMedia('(hover: none)').matches
+    pins.forEach((p, idx) => {
+      const color = PIN_COLORS[p.status] ?? '#0e1b2c'
+      const active = p.status === 'reported' || p.status === 'reopened' || p.status === 'awaiting_confirmation'
+      const icon = L.divIcon({
+        className: 'pin-wrap',
+        html: `<span class="pin-dot" style="animation-delay:${Math.min(idx * 45, 540)}ms"><span class="pin-core${active ? ' pin-pulse' : ''}" style="--pin:${color}"></span></span>`,
+        iconSize: [16, 16],
+        iconAnchor: [8, 8],
       })
-      m.bindTooltip(p.label)
-      if (onSelect) m.on('click', () => onSelect(p.id))
+      const m = L.marker([p.lat, p.lon], { icon, keyboard: true })
+
+      let suppressFocusOpen = false
+      const card = document.createElement('div')
+      card.className = 'pin-card'
+      const title = document.createElement('strong')
+      title.textContent = p.hazard ? (HAZARD_META[p.hazard]?.label ?? p.label) : p.label
+      card.appendChild(title)
+      const st = document.createElement('span')
+      st.className = 'pin-card-status'
+      st.style.color = color
+      st.textContent = STATUS_META[p.status]?.label ?? p.status
+      card.appendChild(st)
+      const metaBits: string[] = []
+      if (p.ward) metaBits.push(`Ward ${p.ward}`)
+      if (p.created_at) metaBits.push(timeAgo(p.created_at))
+      if (p.reports_count && p.reports_count > 1) metaBits.push(`${p.reports_count} reports`)
+      if (metaBits.length > 0) {
+        const meta = document.createElement('span')
+        meta.className = 'pin-card-meta'
+        meta.textContent = metaBits.join(' · ')
+        card.appendChild(meta)
+      }
+      if (onSelect) {
+        const open = document.createElement('button')
+        open.type = 'button'
+        open.className = 'pin-card-open'
+        open.textContent = 'Open issue'
+        open.addEventListener('click', (e) => { e.stopPropagation(); onSelect(p.id) })
+        open.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            // Refocusing the dot would reopen the card via its focus listener; skip once.
+            suppressFocusOpen = true
+            m.closeTooltip()
+            m.getElement()?.focus()
+            window.setTimeout(() => { suppressFocusOpen = false }, 0)
+          }
+        })
+        card.appendChild(open)
+      }
+      // Leaflet closes the tooltip the moment the marker blurs, which would drop the
+      // "Open issue" button as Tab moves focus onto it. Intercept that specific blur
+      // (focus landing inside the card) before Leaflet's own blur listener - this one
+      // must be registered first, so it hooks the 'add' event ahead of bindTooltip.
+      m.on('add', () => {
+        m.getElement()?.addEventListener('blur', (e) => {
+          const tipEl = m.getTooltip()?.getElement()
+          if (tipEl && e.relatedTarget instanceof Node && tipEl.contains(e.relatedTarget)) {
+            e.stopImmediatePropagation()
+          }
+        })
+      })
+      // When focus later leaves the card entirely, close it.
+      card.addEventListener('focusout', (e) => {
+        if (!(e.relatedTarget instanceof Node && card.contains(e.relatedTarget))) m.closeTooltip()
+      })
+      m.bindTooltip(card, { direction: 'top', offset: [0, -10], interactive: true, className: 'pin-tip' })
+      // Touch browsers synthesize mouseout after a tap. Keep the tapped card open
+      // until a map tap, another pin, keyboard close, or navigation dismisses it.
+      if (touch) m.off('mouseout', m.closeTooltip, m)
+      const openTooltip = m.openTooltip.bind(m)
+      m.openTooltip = ((latlng?: L.LatLngExpression) => {
+        if (suppressFocusOpen) return m
+        return openTooltip(latlng)
+      }) as L.Marker['openTooltip']
+      if (onSelect) {
+        // A tap fires emulated mouse events around the click: the mouseover opens the
+        // tooltip before the click arrives, and a second tap may close and reopen it, so
+        // "is the tooltip open" cannot tell first tap from second. Arm on first tap and
+        // navigate only on a second tap within a short window; a later tap re-arms.
+        let armedAt = 0
+        m.on('click', () => {
+          if (!touch) { onSelect(p.id); return }
+          const now = Date.now()
+          if (armedAt && now - armedAt < 1600) { armedAt = 0; onSelect(p.id); return }
+          armedAt = now
+          m.openTooltip()
+        })
+      }
       m.addTo(layer)
+      const el = m.getElement()
+      if (el) {
+        el.setAttribute('aria-label', p.label)
+        if (onSelect) {
+          // Leaflet only makes the dot focusable; wire the keys ourselves:
+          // Enter/Space activates the dot, and Tab moves into the open card so its
+          // "Open issue" button stays reachable without tabbing past every other dot.
+          el.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              m.fire('click')
+            } else if (e.key === 'Tab' && m.isTooltipOpen()) {
+              const btn = m.getTooltip()?.getElement()?.querySelector<HTMLElement>('.pin-card-open')
+              if (btn) {
+                e.preventDefault()
+                btn.focus()
+              }
+            }
+          })
+        }
+      }
       pts.push([p.lat, p.lon])
+    })
+    // Frame the pins, but never wider than the country: a wide spread (or no pins) gets
+    // the fixed India view so state boundaries/labels stay legible. Only re-frame when
+    // the pin set actually changes - re-renders must not reset the user's pan/zoom.
+    const key = pins.map((p) => p.id + ':' + p.status).join('|')
+    if (key !== frameKeyRef.current) {
+      frameKeyRef.current = key
+      if (pts.length === 0) {
+        map.setView(INDIA_VIEW, INDIA_ZOOM)
+      } else {
+        const b = L.latLngBounds(pts)
+        if (b.getNorth() - b.getSouth() > 9 || b.getEast() - b.getWest() > 9) {
+          map.setView(INDIA_VIEW, INDIA_ZOOM)
+        } else {
+          map.fitBounds(b.pad(0.25), { maxZoom: 14 })
+        }
+      }
     }
-    if (pts.length > 0) map.fitBounds(L.latLngBounds(pts).pad(0.25), { maxZoom: 14 })
   }, [pins, onSelect])
 
   return <div className="map" style={{ height }} ref={ref} />
@@ -265,40 +430,6 @@ export function Empty({ children }: { children: React.ReactNode }) {
   return <div className="empty">{children}</div>
 }
 
-// Schematic India overview map (Natural Earth outline, public domain - see src/india.ts).
-// Shows real reports at their projected positions; schematic only - exact locations
-// live on the per-issue map and in the GPS evidence itself.
-import { INDIA_PATH, INDIA_VIEWBOX, indiaProject } from './india'
-
-const INDIA_STATUS_COLORS: Record<Status, string> = PIN_COLORS
-
-export function IndiaMap({ pins, height = 420, onSelect }: { pins: MapPin[]; height?: number; onSelect?: (id: string) => void }) {
-  return (
-    <div className="india-map" style={{ height }}>
-      <svg viewBox={INDIA_VIEWBOX} role="img" aria-label="Schematic map of India showing reported issues" preserveAspectRatio="xMidYMid meet">
-        <path d={INDIA_PATH} className="india-outline" />
-        {pins.map((p) => {
-          const { x, y } = indiaProject(p.lat, p.lon)
-          const active = p.status === 'reported' || p.status === 'reopened' || p.status === 'awaiting_confirmation'
-          return (
-            <g
-              key={p.id}
-              className="india-dot"
-              tabIndex={onSelect ? 0 : undefined}
-              role={onSelect ? 'link' : undefined}
-              onClick={() => onSelect?.(p.id)}
-              onKeyDown={(e) => { if (onSelect && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onSelect(p.id) } }}
-            >
-              <title>{p.label}</title>
-              {active ? <circle cx={x} cy={y} r={0.55} className="india-pulse" fill={INDIA_STATUS_COLORS[p.status] ?? '#0e1b2c'} /> : null}
-              <circle cx={x} cy={y} r={0.34} fill={INDIA_STATUS_COLORS[p.status] ?? '#0e1b2c'} stroke="#fff" strokeWidth={0.09} />
-            </g>
-          )
-        })}
-      </svg>
-    </div>
-  )
-}
 
 /** Official government-record linkage for an issue. Renders the API's candidate warning
  *  BESIDE the award candidates (never buried in metadata): these are possible historical

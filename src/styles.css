@@ -497,19 +497,39 @@ a { color: var(--blue); }
   .photo-strip img { height: 180px; }
 }
 
-/* ---------- schematic India overview map ---------- */
-.india-map { display: flex; justify-content: center; }
-.india-map svg { height: 100%; max-width: 100%; }
-.india-outline { fill: #eceade; stroke: var(--ink); stroke-width: 0.12; stroke-linejoin: round; }
-.india-dot { cursor: pointer; outline: none; }
-.india-dot:focus-visible circle:last-child { stroke: var(--accent); stroke-width: 0.18; }
-.india-pulse { opacity: 0.55; animation: india-pulse 2.4s var(--ease-out) infinite; transform-origin: center; transform-box: fill-box; }
-@keyframes india-pulse {
-  0% { transform: scale(0.5); opacity: 0.55; }
-  70% { transform: scale(2.4); opacity: 0; }
-  100% { transform: scale(2.4); opacity: 0; }
+/* ---------- political map pins + hover cards ---------- */
+.pin-wrap { background: transparent; border: none; }
+.leaflet-tooltip.pin-tip { pointer-events: auto; }
+.pin-wrap::before { content: ''; position: absolute; top: -18px; left: -8px; right: -8px; bottom: -8px; }
+.pin-dot { pointer-events: none; display: block; width: 16px; height: 16px; animation: pin-pop 0.45s var(--ease-out) both; }
+.pin-core { pointer-events: none; display: block; width: 100%; height: 100%; border-radius: 50%; background: var(--pin); border: 2px solid #fff; box-shadow: 0 1px 4px rgba(14, 27, 44, 0.45); transition: transform 0.18s var(--ease-out); position: relative; }
+.leaflet-marker-icon:hover .pin-core, .leaflet-marker-icon:focus-visible .pin-core { pointer-events: none; transform: scale(1.3); }
+.pin-pulse::after { content: ''; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--pin); animation: pin-ring 2.2s var(--ease-out) infinite; }
+@keyframes pin-pop {
+  from { transform: scale(0); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
 }
-@media (prefers-reduced-motion: reduce) { .india-pulse { animation: none; opacity: 0.3; } }
+@keyframes pin-ring {
+  0% { transform: scale(0.6); opacity: 0.9; }
+  70% { transform: scale(1.4); opacity: 0; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .leaflet-tooltip.pin-tip { pointer-events: auto; }
+.pin-wrap::before { content: ''; position: absolute; top: -18px; left: -8px; right: -8px; bottom: -8px; }
+.pin-dot { pointer-events: none; animation: none; }
+  .pin-core { pointer-events: none; transition: none; }
+  .pin-pulse::after { display: none; }
+}
+
+.leaflet-tooltip.pin-tip { background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 10px 12px; }
+.leaflet-tooltip.pin-tip.leaflet-tooltip-top::before { border-top-color: var(--line); }
+.pin-card { display: flex; flex-direction: column; gap: 2px; min-width: 150px; text-align: left; }
+.pin-card strong { font-size: 0.9rem; line-height: 1.25; }
+.pin-card-status { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600; }
+.pin-card-meta { font-size: 0.76rem; color: var(--muted); }
+.pin-card-open { margin-top: 7px; align-self: flex-start; border: 1px solid var(--line); background: var(--accent-soft); color: var(--accent-deep); border-radius: 999px; padding: 4px 12px; font-size: 0.76rem; font-weight: 600; cursor: pointer; transition: background 0.15s ease, color 0.15s ease; }
+.pin-card-open:hover { background: var(--accent); color: #fff; }
 
 
 /* ---------- auth method tabs + OTP ---------- */
@@ -576,3 +596,5 @@ a { color: var(--blue); }
 .faq-topic { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px; border-radius: 12px; background: #fff; border: 1px solid #e2e8f0; font-size: 15px; line-height: 1.45; color: #0f2a44; font-weight: 600; cursor: pointer; text-align: left; }
 .faq-answer { padding: 18px; background: #fff; border-radius: 16px; border: 1px solid #cbd5e1; display: flex; flex-direction: column; gap: 12px; font-size: 16px; line-height: 1.55; color: #334155; }
 .faq-answer p { margin: 0; }
+.fit-india-btn { background: var(--card); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; font: inherit; font-size: 0.78rem; font-weight: 600; cursor: pointer; box-shadow: var(--shadow); }
+.fit-india-btn:hover, .fit-india-btn:focus-visible { background: var(--bg); }
