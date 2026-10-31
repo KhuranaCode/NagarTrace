@@ -4,7 +4,7 @@ import { api } from '../api'
 import Counters from '../components/Counters'
 import { DEMO } from '../config'
 import type { PublicIssue } from '../types'
-import { Empty, ErrorBox, IndiaMap, Spinner } from '../ui'
+import { Empty, ErrorBox, MapView, Spinner } from '../ui'
 import { IssueCard } from './shared'
 
 const STEPS = [
@@ -176,20 +176,20 @@ export default function Home() {
           <span className="mono-label">Public status · no login</span>
           <h2>{DEMO ? 'Simulated reports across India' : 'Live across India'}</h2>
           <p className="sub">{DEMO
-            ? 'Demo data only - every point here is a synthetic sample report, not a genuine complaint. Locations are approximate and photos are never stored.'
-            : "Every genuine report, live on one map of India. Schematic overview - public locations are rounded to about 11 m, and the exact spot lives on each issue's own map. Photos are never shown publicly."}</p>
+            ? 'Demo data only - every point here is a synthetic sample report, not a genuine complaint. Hover a dot for its public details; locations are approximate and photos are never stored.'
+            : "Every genuine report, live on one political map of India - state boundaries and labels on a regional view, with a Fit India button for the full extent. Hover a dot for the report's public details; on a phone, tap the dot first. Public locations are rounded to about 11 m, and the exact spot lives on each issue's own map. Photos are never shown publicly."}</p>
           {err ? <ErrorBox error={err} onRetry={load} /> : null}
           {!issues && !err ? <Spinner label="Loading live issues. The free server sleeps when idle - first load can take a minute." /> : null}
           {issues ? (
             issues.length === 0 ? (
               <>
-                <IndiaMap pins={[]} />
+                <MapView pins={[]} />
                 <Empty>No reports yet - the map lights up with the first genuine report. Be the first.</Empty>
               </>
             ) : (
               <>
-                <IndiaMap
-                  pins={issues.map((i) => ({ id: i.id, lat: i.location.lat, lon: i.location.lon, status: i.status, label: `${i.hazard} - ${i.status}` }))}
+                <MapView
+                  pins={issues.map((i) => ({ id: i.id, lat: i.location.lat, lon: i.location.lon, status: i.status, label: `${i.hazard} - ${i.status}`, hazard: i.hazard, ward: i.ward, created_at: i.created_at, reports_count: i.reports_count }))}
                   onSelect={(id) => nav(`/issues/${id}`)}
                 />
                 <div className="map-legend">
