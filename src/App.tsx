@@ -15,6 +15,7 @@ import Report from './pages/Report'
 import Settings from './pages/Settings'
 import Updates from './pages/Updates'
 import { TopBar } from './ui'
+import { LocalFaq } from './components/LocalFaq'
 
 function oauthErrorFromUrl(): string | null {
   if (typeof window === 'undefined') return null
@@ -74,6 +75,7 @@ export default function App() {
         <Route path="/privacy" element={<Privacy />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <LocalFaq />
     </div>
   )
 }
