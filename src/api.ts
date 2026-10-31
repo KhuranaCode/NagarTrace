@@ -205,6 +205,27 @@ const realApi = {
       throw e
     }
   },
+  /** Platform guide chat: answers how-the-app-works questions only; 503-shaped when the laptop is offline. */
+  aiChat: async (message: string): Promise<{ ai_available: true; reply: string; model: string } | AiUnavailable> => {
+    try {
+      return await req<{ ai_available: true; reply: string; model: string }>('/v1/ai/chat', { method: 'POST', body: { message } })
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 503) return { ai_available: false, reason: e.code }
+      if (e instanceof ApiError && e.status === 404) return { ai_available: false, reason: 'not_live_yet' }
+      throw e
+    }
+  },
+  /** Grievance email DRAFT: text the citizen reviews and sends themselves. The app never sends it. */
+  aiEmailDraft: async (body: { hazard: string; note?: string; lat: number; lon: number; ward?: string; complaint_no?: string }): Promise<{ ai_available: true; subject: string; body: string; draft: true } | AiUnavailable> => {
+    try {
+      const r = await req<{ subject: string; body: string; draft: true }>('/v1/ai/email-draft', { method: 'POST', body })
+      return { ai_available: true, ...r }
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 503) return { ai_available: false, reason: e.code }
+      if (e instanceof ApiError && e.status === 404) return { ai_available: false, reason: 'not_live_yet' }
+      throw e
+    }
+  },
 }
 
 export type Api = typeof realApi

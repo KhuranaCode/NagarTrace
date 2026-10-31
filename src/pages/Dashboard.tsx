@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import AiGuide from './AiGuide'
 import { Link } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../auth'
@@ -108,6 +109,7 @@ export default function Dashboard() {
     <div className="container section">
       <h1 style={{ letterSpacing: '-0.02em' }}>Namaste{me.alias ? `, ${me.alias}` : ''}</h1>
       <p className="muted">Your reports, your ward, your roles. <Link to="/app/settings">Settings →</Link></p>
+      <AiGuide />
 
       {showWelcome ? (
         <div className="card pad-lg welcome-card" role="status">

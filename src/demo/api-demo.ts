@@ -28,6 +28,8 @@ export const demoApi = {
   // No AI in the demo: honest unavailable, never a fabricated suggestion.
   aiStatus: async () => { await delay(30); return { configured: false, available: false, reason: 'demo' } },
   aiReportCheck: async () => { await delay(30); return { ai_available: false as const, reason: 'demo' } },
+  aiChat: async () => { await delay(30); return { ai_available: false as const, reason: 'demo' } },
+  aiEmailDraft: async () => { await delay(30); return { ai_available: false as const, reason: 'demo' } },
 
   health: async () => { await delay(60); return { ok: true, verification_mode: 'demo', unrouted_triage: 'demo', policy: 'demo build - synthetic 30-day activity' } },
   me: async (): Promise<Me> => { await delay(); return { id: DEMO_USER_ID, alias: 'demo-visitor', ward: '9', points: 64, created_at: new Date(Date.now() - 21 * 86400e3).toISOString(), memberships: [] } },
