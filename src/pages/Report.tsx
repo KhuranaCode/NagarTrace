@@ -6,6 +6,7 @@ import { useAuth } from '../auth'
 import type { Hazard, ReportResult } from '../types'
 import { ErrorBox, HAZARD_META, HazardIcon } from '../ui'
 import { assessEvidence, formatVerdict, parsePhotoMetadata, type MetadataAssessment } from '../evidence/photo-metadata'
+import { AiConsentGate } from '../components/AiConsent'
 
 type Gps = { lat: number; lon: number; accuracy_m: number; captured_at: string }
 
@@ -59,7 +60,7 @@ export default function Report() {
   const [pointsAwarded, setPointsAwarded] = useState<number | null>(null)
   // AI pre-check (owner-laptop advisory). Honest states: never a fabricated suggestion;
   // when the laptop is offline we say so and the normal submit path is unchanged.
-  const [aiState, setAiState] = useState<'idle' | 'checking' | 'done' | 'unavailable'>('idle')
+  const [aiState, setAiState] = useState<'idle' | 'checking' | 'done' | 'unavailable' | 'consent'>('idle')
   const [advisory, setAdvisory] = useState<Advisory | null>(null)
   const [aiReason, setAiReason] = useState<string | null>(null)
 
@@ -120,6 +121,8 @@ export default function Report() {
       if (r.ai_available) {
         setAdvisory(r.advisory)
         setAiState('done')
+      } else if (r.reason === 'consent_required') {
+        setAiState('consent')
       } else {
         setAiReason(r.reason)
         setAiState('unavailable')
@@ -440,6 +443,9 @@ export default function Report() {
               <p className="small-note" style={{ marginBottom: 0 }}>Get an advisory read on your draft before sending. It runs on the project owner's own machine - it never verifies your report and nothing is sent to officials automatically. <button className="btn ghost" style={{ marginLeft: 6 }} onClick={runAiCheck}>Check my draft</button></p>
             ) : null}
             {aiState === 'checking' ? <p className="small-note" style={{ marginBottom: 0 }}>Checking… (can take up to about 25 seconds)</p> : null}
+            {aiState === 'consent' ? (
+              <AiConsentGate feature="photo_advisory" onGranted={() => setAiState('idle')} />
+            ) : null}
             {aiState === 'unavailable' ? (
               <p className="small-note" style={{ marginBottom: 0 }}>AI check is offline right now{aiReason ? ` (${aiReason.replace(/_/g, ' ')})` : ''}. Your report is unaffected - you can send it normally. <button className="btn ghost" style={{ marginLeft: 6 }} onClick={runAiCheck}>Retry</button></p>
             ) : null}

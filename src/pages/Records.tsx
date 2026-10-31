@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { NhaiAwardsBrowse } from '../types'
 import { ErrorBox, Spinner } from '../ui'
+import { AiConsentGate } from '../components/AiConsent'
 
 /** Public catalog of official NHAI FY2024-25 awarded projects (verbatim source rows).
  *  Historical snapshot - real contractors on record, NOT current road maintainers. */
@@ -12,6 +13,7 @@ export default function Records() {
   const [nh, setNh] = useState('')
   const [cname, setCname] = useState('')
   const [cbusy, setCbusy] = useState(false)
+  const [consentNeeded, setConsentNeeded] = useState(false)
   const [cresult, setCresult] = useState<{ kind: 'brief'; summary: string; record_count: number; key_facts: string[]; warning?: string } | { kind: 'note'; text: string } | null>(null)
 
   const brief = async () => {
@@ -20,7 +22,8 @@ export default function Records() {
     setCbusy(true); setCresult(null)
     try {
       const r = await api.aiContractorBrief(q)
-      if (!r.ai_available) setCresult({ kind: 'note', text: r.reason === 'not_live_yet' ? 'The AI brief is not live on this server yet. The catalog filter above works without it.' : 'The AI brief is offline right now - it runs on the operator\'s own machine. The catalog filter above works without it.' })
+      if (!r.ai_available && r.reason === 'consent_required') setConsentNeeded(true)
+      else if (!r.ai_available) setCresult({ kind: 'note', text: r.reason === 'not_live_yet' ? 'The AI brief is not live on this server yet. The catalog filter above works without it.' : 'The AI brief is offline right now - it runs on the operator\'s own machine. The catalog filter above works without it.' })
       else if (!r.found) setCresult({ kind: 'note', text: r.reason === 'registry_not_loaded' ? 'The award registry is not loaded on this deployment yet.' : 'No award records match that name in the FY2024-25 NHAI snapshot.' })
       else if (r.brief) setCresult({ kind: 'brief', summary: r.brief.summary, record_count: r.brief.record_count, key_facts: r.brief.key_facts, warning: r.candidate_warning })
       else setCresult({ kind: 'note', text: 'No brief was returned.' })
@@ -69,6 +72,7 @@ export default function Records() {
               <input value={cname} maxLength={120} placeholder="Contractor name, e.g. from a record above" onChange={(e) => setCname(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') void brief() }} />
               <button className="btn" disabled={cbusy || cname.trim().length < 2} onClick={() => void brief()}>{cbusy ? 'Checking...' : 'Brief'}</button>
             </div>
+            {consentNeeded ? <AiConsentGate feature="contractor_finder" onGranted={() => setConsentNeeded(false)} /> : null}
             {cresult?.kind === 'note' ? <p className="field-hint">{cresult.text}</p> : null}
             {cresult?.kind === 'brief' ? (
               <div style={{ marginTop: 8 }}>

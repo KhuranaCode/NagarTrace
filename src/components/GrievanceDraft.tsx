@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { api } from '../api'
+import { AiConsentGate } from './AiConsent'
 import type { IssueDetail } from '../types'
 
 /** AI grievance email DRAFT. The backend only drafts text: nothing is addressed or sent.
@@ -9,6 +10,7 @@ export default function GrievanceDraft({ d }: { d: IssueDetail }) {
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const [unavail, setUnavail] = useState<string | null>(null)
+  const [consentNeeded, setConsentNeeded] = useState(false)
   const [subject, setSubject] = useState('')
   const [body, setBody] = useState('')
 
@@ -17,6 +19,7 @@ export default function GrievanceDraft({ d }: { d: IssueDetail }) {
     try {
       const r = await api.aiEmailDraft({ hazard: d.hazard, lat: d.location.lat, lon: d.location.lon, ward: d.ward ?? undefined, complaint_no: d.complaint_id ?? undefined })
       if (r.ai_available) { setSubject(r.subject); setBody(r.body) }
+      else if (r.reason === 'consent_required') setConsentNeeded(true)
       else setUnavail(r.reason === 'not_live_yet' ? 'The drafting assistant is not live on this server yet.' : 'The drafting assistant is offline right now - it runs on the operator\'s own machine. Try again later.')
     } catch {
       setUnavail('Could not reach the drafting assistant. Nothing was drafted.')
@@ -32,6 +35,7 @@ export default function GrievanceDraft({ d }: { d: IssueDetail }) {
       </div>
       <p className="field-hint">A draft only - NagarTrace never sends it. Review and edit it, choose the right authority yourself, and send it from your own email.</p>
       {!subject && !unavail ? <button className="btn" disabled={busy} onClick={() => void generate()}>{busy ? 'Drafting...' : 'Generate draft'}</button> : null}
+      {consentNeeded ? <AiConsentGate feature="email_draft" onGranted={() => setConsentNeeded(false)} /> : null}
       {unavail ? <p className="field-hint">{unavail}</p> : null}
       {subject ? (
         <>
