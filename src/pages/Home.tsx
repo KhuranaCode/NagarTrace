@@ -68,22 +68,22 @@ export default function Home() {
         </div>
         <div className="hero-marquee">
           <div className="marquee-track">
-            <figure key="a-0"><img src={`${import.meta.env.BASE_URL}photos/broken-road-delhi.jpg`} alt="A deep open pothole breaking through a city road surface" loading="lazy" /></figure>
-            <figure key="a-1"><img src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="A rain-soaked rural road filled with waterlogged potholes" loading="lazy" /></figure>
-            <figure key="a-2"><img src={`${import.meta.env.BASE_URL}photos/deformed-road-bengaluru.jpg`} alt="Deformed, cracked asphalt on an urban street" loading="lazy" /></figure>
-            <figure key="a-3"><img src={`${import.meta.env.BASE_URL}photos/broken-road-delhi.jpg`} alt="A deep open pothole breaking through a city road surface" loading="lazy" /></figure>
-            <figure key="a-4"><img src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="A rain-soaked rural road filled with waterlogged potholes" loading="lazy" /></figure>
-            <figure key="a-5"><img src={`${import.meta.env.BASE_URL}photos/deformed-road-bengaluru.jpg`} alt="Deformed, cracked asphalt on an urban street" loading="lazy" /></figure>
-            <figure key="a-6"><img src={`${import.meta.env.BASE_URL}photos/broken-road-delhi.jpg`} alt="A deep open pothole breaking through a city road surface" loading="lazy" /></figure>
-            <figure key="a-7"><img src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="A rain-soaked rural road filled with waterlogged potholes" loading="lazy" /></figure>
-            <figure key="b-0"><img src={`${import.meta.env.BASE_URL}photos/broken-road-delhi.jpg`} alt="A deep open pothole breaking through a city road surface" loading="lazy" /></figure>
-            <figure key="b-1"><img src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="A rain-soaked rural road filled with waterlogged potholes" loading="lazy" /></figure>
-            <figure key="b-2"><img src={`${import.meta.env.BASE_URL}photos/deformed-road-bengaluru.jpg`} alt="Deformed, cracked asphalt on an urban street" loading="lazy" /></figure>
-            <figure key="b-3"><img src={`${import.meta.env.BASE_URL}photos/broken-road-delhi.jpg`} alt="A deep open pothole breaking through a city road surface" loading="lazy" /></figure>
-            <figure key="b-4"><img src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="A rain-soaked rural road filled with waterlogged potholes" loading="lazy" /></figure>
-            <figure key="b-5"><img src={`${import.meta.env.BASE_URL}photos/deformed-road-bengaluru.jpg`} alt="Deformed, cracked asphalt on an urban street" loading="lazy" /></figure>
-            <figure key="b-6"><img src={`${import.meta.env.BASE_URL}photos/broken-road-delhi.jpg`} alt="A deep open pothole breaking through a city road surface" loading="lazy" /></figure>
-            <figure key="b-7"><img src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="A rain-soaked rural road filled with waterlogged potholes" loading="lazy" /></figure>
+            <figure key="a-0"><img src={`${import.meta.env.BASE_URL}photos/broken-road-delhi.jpg`} alt="A deep open pothole breaking through a city road surface" /></figure>
+            <figure key="a-1"><img src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="A rain-soaked rural road filled with waterlogged potholes" /></figure>
+            <figure key="a-2"><img src={`${import.meta.env.BASE_URL}photos/deformed-road-bengaluru.jpg`} alt="Deformed, cracked asphalt on an urban street" /></figure>
+            <figure key="a-3"><img src={`${import.meta.env.BASE_URL}photos/broken-road-delhi.jpg`} alt="A deep open pothole breaking through a city road surface" /></figure>
+            <figure key="a-4"><img src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="A rain-soaked rural road filled with waterlogged potholes" /></figure>
+            <figure key="a-5"><img src={`${import.meta.env.BASE_URL}photos/deformed-road-bengaluru.jpg`} alt="Deformed, cracked asphalt on an urban street" /></figure>
+            <figure key="a-6"><img src={`${import.meta.env.BASE_URL}photos/broken-road-delhi.jpg`} alt="A deep open pothole breaking through a city road surface" /></figure>
+            <figure key="a-7"><img src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="A rain-soaked rural road filled with waterlogged potholes" /></figure>
+            <figure key="b-0"><img src={`${import.meta.env.BASE_URL}photos/broken-road-delhi.jpg`} alt="A deep open pothole breaking through a city road surface" /></figure>
+            <figure key="b-1"><img src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="A rain-soaked rural road filled with waterlogged potholes" /></figure>
+            <figure key="b-2"><img src={`${import.meta.env.BASE_URL}photos/deformed-road-bengaluru.jpg`} alt="Deformed, cracked asphalt on an urban street" /></figure>
+            <figure key="b-3"><img src={`${import.meta.env.BASE_URL}photos/broken-road-delhi.jpg`} alt="A deep open pothole breaking through a city road surface" /></figure>
+            <figure key="b-4"><img src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="A rain-soaked rural road filled with waterlogged potholes" /></figure>
+            <figure key="b-5"><img src={`${import.meta.env.BASE_URL}photos/deformed-road-bengaluru.jpg`} alt="Deformed, cracked asphalt on an urban street" /></figure>
+            <figure key="b-6"><img src={`${import.meta.env.BASE_URL}photos/broken-road-delhi.jpg`} alt="A deep open pothole breaking through a city road surface" /></figure>
+            <figure key="b-7"><img src={`${import.meta.env.BASE_URL}photos/potholes-road.jpg`} alt="A rain-soaked rural road filled with waterlogged potholes" /></figure>
           </div>
         </div>
         <p className="photo-credit hero-photo-credit">
