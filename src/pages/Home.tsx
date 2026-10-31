@@ -65,6 +65,15 @@ export default function Home() {
           <div className="demo-strip">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><path d="M9 3h6M10 3v6.5L4.8 19a2 2 0 0 0 1.8 3h10.8a2 2 0 0 0 1.8-3L14 9.5V3" /></svg> Not connected to any municipal system yet. Complaints stay in this app until a real authority is on board.
           </div>
+          {DEMO ? (
+            <div className="demo-strip">
+              Get the app:{' '}
+              <a href="https://github.com/mananbharti/NagarTrace-mobile/releases/download/v0.2.0-startupfix-fed16c9/nagartrace-0.2.0-startupfix-fed16c9.apk">Android APK</a>
+              {' · '}
+              <a href="https://github.com/mananbharti/NagarTrace-mobile/releases/tag/v0.2.0-startupfix-fed16c9">iOS IPA (unsigned - needs sideload signing)</a>
+              . GitHub login required (private repo). These builds predate this demo's sample AI and India-wide data.
+            </div>
+          ) : null}
         </div>
         <div className="hero-marquee">
           <div className="marquee-track">
