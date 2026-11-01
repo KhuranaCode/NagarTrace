@@ -32,7 +32,6 @@ function oauthErrorFromUrl(): string | null {
 }
 
 export default function App() {
-  const [warming, setWarming] = useState(false)
   const [oauthErr, setOauthErr] = useState<string | null>(null)
   const { session } = useAuth()
 
@@ -41,18 +40,13 @@ export default function App() {
     if (e) setOauthErr(e)
   }, [])
 
+  // Silently wake the free-tier API on load; no banner is shown.
   useEffect(() => {
-    const t = setTimeout(() => setWarming(true), 2500)
-    api.health().catch(() => undefined).finally(() => {
-      clearTimeout(t)
-      setWarming(false)
-    })
-    return () => clearTimeout(t)
+    api.health().catch(() => undefined)
   }, [])
 
   return (
     <div>
-      {warming ? <div className="warm-banner">Waking up the server - the free tier sleeps when idle. First request can take about a minute.</div> : null}
       {oauthErr ? (
         <div className="warm-banner" role="alert" style={{ background: 'var(--red-soft)', color: 'var(--red)' }}>
           {oauthErr}{' '}
