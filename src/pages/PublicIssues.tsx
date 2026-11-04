@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { PublicIssue, Status } from '../types'
-import { Empty, ErrorBox, MapView, Spinner, STATUS_META } from '../ui'
+import { Empty, ErrorBox, MapView, STATUS_META } from '../ui'
 import { IssueCard } from './shared'
 import { useNavigate } from 'react-router-dom'
 
@@ -59,21 +59,21 @@ export default function PublicIssues() {
       </div>
 
       {err ? <ErrorBox error={err} onRetry={load} /> : null}
-      {!issues && !err ? <Spinner label="Loading. The free server sleeps when idle - first load can take a minute." /> : null}
+      {/* Same immediate-map rule as the home map: never leave a bare spinner while the
+          free server wakes. Dots appear when the data lands. */}
+      <MapView
+        pins={(issues ?? []).map((i) => ({ id: i.id, lat: i.location.lat, lon: i.location.lon, status: i.status, label: `${i.hazard} - ${i.status}`, hazard: i.hazard, ward: i.ward, created_at: i.created_at, reports_count: i.reports_count }))}
+        onSelect={(id) => nav(`/issues/${id}`)}
+      />
+      <p className="small-note" style={{ textAlign: 'center', marginTop: 6 }}>Political map (OpenStreetMap) on a regional India view - use Fit India on the map for the full extent. Hover a dot for its public details; on a phone, tap a dot, then Open issue.</p>
+      {!issues && !err ? <p className="small-note" style={{ textAlign: 'center', marginTop: 6 }}>Loading live issues - the free server sleeps when idle, so the dots can take up to a minute to appear.</p> : null}
       {issues && issues.length === 0 ? <Empty>No reports to show yet. When a genuine report is filed, it appears here.</Empty> : null}
       {issues && issues.length > 0 ? (
-        <>
-          <MapView
-            pins={issues.map((i) => ({ id: i.id, lat: i.location.lat, lon: i.location.lon, status: i.status, label: `${i.hazard} - ${i.status}`, hazard: i.hazard, ward: i.ward, created_at: i.created_at, reports_count: i.reports_count }))}
-            onSelect={(id) => nav(`/issues/${id}`)}
-          />
-          <p className="small-note" style={{ textAlign: 'center', marginTop: 6 }}>Political map (OpenStreetMap) on a regional India view - use Fit India on the map for the full extent. Hover a dot for its public details; on a phone, tap a dot, then Open issue.</p>
-          <div className="grid cols-2" style={{ marginTop: 20 }}>
-            {issues.map((i) => (
-              <IssueCard key={i.id} issue={i} to={`/issues/${i.id}`} />
-            ))}
-          </div>
-        </>
+        <div className="grid cols-2" style={{ marginTop: 20 }}>
+          {issues.map((i) => (
+            <IssueCard key={i.id} issue={i} to={`/issues/${i.id}`} />
+          ))}
+        </div>
       ) : null}
     </div>
   )
