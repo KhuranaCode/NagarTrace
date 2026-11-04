@@ -5,6 +5,7 @@ import type { OfficialRecords, Hazard, Status } from './types'
 import { DEMO } from './config'
 import { useAuth } from './auth'
 import { INDIA_BOUNDARY } from './india-boundary'
+import { INDIA_STATE_LINES } from './india-states'
 
 export const HAZARD_META: Record<Hazard, { label: string; icon: string }> = {
   pothole: { label: 'Pothole', icon: 'pothole' },
@@ -253,6 +254,15 @@ export function MapView({ pins, height = 380, onSelect }: { pins: MapPin[]; heig
     L.tileLayer(TILE_URL, {
       attribution: TILE_ATTRIBUTION,
       maxZoom: 19,
+    }).addTo(map)
+    // State/UT dividing lines under the national outline: OSM's own boundary rendering
+    // is faint at country zoom, so draw them explicitly. Interior shared borders only
+    // (geoBoundaries, CC BY 4.0) - coastlines and international borders stay owned by the
+    // claimed outline above, so this layer can never conflict with it. Non-interactive
+    // so pins stay the only clickable layer.
+    L.polyline(INDIA_STATE_LINES, {
+      color: '#0e1b2c', weight: 0.8, opacity: 0.32, interactive: false,
+      attribution: 'State lines: <a href="https://www.geoboundaries.org">geoBoundaries</a> (CC BY 4.0)',
     }).addTo(map)
     // India's official claimed external boundary, drawn over the basemap: OSM tiles show
     // de-facto control lines in Kashmir, while the earlier schematic map deliberately
