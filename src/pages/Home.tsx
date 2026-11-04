@@ -4,7 +4,7 @@ import { api } from '../api'
 import Counters from '../components/Counters'
 import { DEMO } from '../config'
 import type { PublicIssue } from '../types'
-import { Empty, ErrorBox, MapView, Spinner } from '../ui'
+import { Empty, ErrorBox, MapView } from '../ui'
 import { IssueCard } from './shared'
 
 const STEPS = [
@@ -179,19 +179,18 @@ export default function Home() {
             ? 'Demo data only - every point here is a synthetic sample report, not a genuine complaint. Hover a dot for its public details; locations are approximate and photos are never stored.'
             : "Every genuine report, live on one political map of India - state boundaries and labels on a regional view, with a Fit India button for the full extent. Hover a dot for the report's public details; on a phone, tap the dot first. Public locations are rounded to about 11 m, and the exact spot lives on each issue's own map. Photos are never shown publicly."}</p>
           {err ? <ErrorBox error={err} onRetry={load} /> : null}
-          {!issues && !err ? <Spinner label="Loading live issues. The free server sleeps when idle - first load can take a minute." /> : null}
+          {/* The map renders immediately - the free API can sleep for a minute, and a
+              bare spinner read as a stuck map. Dots appear as soon as the data lands. */}
+          <MapView
+            pins={(issues ?? []).map((i) => ({ id: i.id, lat: i.location.lat, lon: i.location.lon, status: i.status, label: `${i.hazard} - ${i.status}`, hazard: i.hazard, ward: i.ward, created_at: i.created_at, reports_count: i.reports_count }))}
+            onSelect={(id) => nav(`/issues/${id}`)}
+          />
+          {!issues && !err ? <p className="small-note" style={{ textAlign: 'center', marginTop: 6 }}>Loading live issues - the free server sleeps when idle, so the dots can take up to a minute to appear.</p> : null}
           {issues ? (
             issues.length === 0 ? (
-              <>
-                <MapView pins={[]} />
-                <Empty>No reports yet - the map lights up with the first genuine report. Be the first.</Empty>
-              </>
+              <Empty>No reports yet - the map lights up with the first genuine report. Be the first.</Empty>
             ) : (
               <>
-                <MapView
-                  pins={issues.map((i) => ({ id: i.id, lat: i.location.lat, lon: i.location.lon, status: i.status, label: `${i.hazard} - ${i.status}`, hazard: i.hazard, ward: i.ward, created_at: i.created_at, reports_count: i.reports_count }))}
-                  onSelect={(id) => nav(`/issues/${id}`)}
-                />
                 <div className="map-legend">
                   <span><i style={{ background: '#f59e0b' }} /> Reported</span>
                   <span><i style={{ background: '#3b82f6' }} /> Assigned</span>
